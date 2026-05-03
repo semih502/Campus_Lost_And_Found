@@ -1,0 +1,21 @@
+:root {
+    /* Renk Paleti */
+    --color-primary: #191970; /* Midnight Blue */
+    --color-accent: #dc2626;
+    --color-bg-light: #f4f6f9;
+    --color-white: #fdfbf7;
+    --color-text: #2f3542;
+    --color-border: #dfe4ea;
+    
+    /* Fontlar */
+    --font-heading: 'Playfair Display', serif;/*Başlık fontu*/
+    --font-body: 'Inter', sans-serif;/*Gövde fontu*/
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-bg-light: #1a1a2e;/*Dark mode desteği*/
+        --color-white: #16213e;
+        --color-text: #e0e0e0;
+        --color-border: #2f3542;
+    }
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details | Campus Lost &amp; Found</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg c-navbar shadow mb-5">
+        <div class="container">
+
+            <a class="navbar-brand c-navbar__brand" href="index.html">
+                <span>🎓</span> Campus Lost &amp; Found
+            </a>
+
+            <!--Mobilde görünür, masaüstünde gizlenir -->
+            <button
+                class="navbar-toggler border-0"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavMenu"
+                aria-controls="mainNavMenu"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!--Mobilde açılır/kapanır -->
+            <div class="collapse navbar-collapse" id="mainNavMenu">
+                <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
+                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ Post New Ad</a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    
+    <div class="container mb-5">
+        <div class="row g-5">
+
+            <!-- =============================================
+                 SOL KOLON: İlan Görseli
+                 Görsel kaynağı ilerleyen aşamada 'fotograflar'
+                 tablosundan dinamik olarak gelecek.
+            ============================================= -->
+            <div class="col-md-7">
+                <div class="c-card shadow-sm overflow-hidden rounded-4 border-0">
+                    <!--
+                        Düzeltme 2: alt metni spesifik hale getirildi.
+                        loading="lazy" eklendi (performans).
+                        Inline style → CSS'e taşınmalı: c-card__img class'ı
+                        main.css'te object-fit ve min-height tanımlanacak.
+                    -->
+                    <img
+                     src="https://images.unsplash.com/photo-1627123424574-724758594e93?w=800"
+                     class="img-fluid w-100 c-card__img"
+                     alt="Lost item photo — black leather wallet"
+                     loading="lazy"
+                     style="height: 400px; object-fit: cover; object-position: center;"
+                    
+                    >
+                </div>
+            </div>
+
+            <div class="col-md-5">
+
+                <!-- Durum rozeti ve kategori etiketi -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-danger px-3 py-2">Lost</span>
+                    <span class="text-muted fw-bold small text-uppercase">Wallet &amp; Bags</span>
+                </div>
+
+                <h1 class="fw-bold mb-3 c-detail__title">Black Leather Wallet</h1>
+
+                <!-- ─── Bilgi Kartı ─────────────────────────── -->
+                <div class="p-4 bg-white rounded-4 mb-4 border shadow-sm">
+
+                    <dl class="mb-0">
+
+                        <!-- Konum bilgisi -->
+                        <dt class="text-muted small text-uppercase fw-bold mb-1">Specific Location</dt>
+                        <dd class="fw-semibold mb-3">Central Library - 2nd Floor Study Area</dd>
+
+                        <hr class="text-muted opacity-25">
+
+                        <!-- Tarih bilgisi -->
+                        <dt class="text-muted small text-uppercase fw-bold mb-1">Date Found/Lost</dt>
+                        <dd class="fw-semibold mb-3">April 28, 2026</dd>
+
+                        <hr class="text-muted opacity-25">
+
+                        <!-- Açıklama -->
+                        <dt class="text-muted small text-uppercase fw-bold mb-1">Detailed Description</dt>
+                        <dd class="text-secondary mt-1 mb-0">
+                            Found a black leather wallet near the window desks.
+                            It has a student card inside for "Beyza Nur".
+                            Please reach out if you are the owner or know them.
+                        </dd>
+
+                    </dl>
+                </div>
+                <!-- /Bilgi Kartı -->
+
+
+                <!-- ─── Aksiyon Butonları ───────────────────── -->
+                <!--
+                    Düzeltme 5: Her iki butona type="button" eklendi.
+                    İşlevsiz butonlar JS fonksiyonlarına bağlandı.
+                    "Message the Finder" → openMessages() fonksiyonu
+                    "Report as Spam"     → reportSpam() fonksiyonu
+                -->
+                <div class="d-grid gap-3">
+                    <button
+                        type="button"
+                        id="btnMessage"
+                        class="btn c-btn-primary py-3 fw-bold shadow-sm"
+                        onclick="openMessages()"
+                    >
+                        <span>✉️</span> Message the Finder
+                    </button>
+                    <button
+                        type="button"
+                        id="btnReport"
+                        class="btn btn-outline-dark py-3 fw-bold"
+                        onclick="reportSpam()"
+                    >
+                        <span>🚩</span> Report as Spam
+                    </button>
+                </div>
+                <!-- /Aksiyon Butonları -->
+
+
+                <!-- ─── İlan Sahibi Bilgisi ────────────────── -->
+                <!--
+                    Düzeltme 6: Avatar boyutu inline style'dan
+                    c-avatar class'ına taşındı (main.css'te tanımlanacak).
+                    Avatar baş harfi JS ile dinamik üretiliyor
+                    (şu an hardcoded "U" yerine id="avatarInitial").
+                    TODO: Kullanıcı verisi 'ogrenciler' tablosundan gelince
+                    updateUserCard(userName, memberSince) çağrılacak.
+                -->
+                <div class="mt-4 d-flex align-items-center p-3 border rounded-4 bg-light">
+                    <div class="flex-shrink-0">
+                        <div
+                            id="avatarCircle"
+                            class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                        >
+                            <span id="avatarInitial" class="fw-bold">U</span>
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <h6 id="userName" class="mb-0 fw-bold">User #2310205009</h6>
+                        <small id="memberSince" class="text-muted">Member since Feb 2026</small>
+                    </div>
+                </div>
+                <!-- /İlan Sahibi Bilgisi -->
+
+            </div>
+            <!-- /SAĞ KOLON -->
+
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        function openMessages() {
+            const btn = document.getElementById('btnMessage');
+            btn.textContent = 'Redirecting...';
+            btn.disabled = true;
+
+            // TODO: window.location.href = 'messages.html?ad=ILAN_ID';
+            setTimeout(() => {
+                btn.innerHTML = '<span>✉️</span> Message the Finder';
+                btn.disabled = false;
+            }, 1000);
+        }
+
+
+        /* ── Spam Bildirimi ──────────────────────────────
+           TODO: Backend endpoint hazır olunca fetch()
+           ile POST isteği buraya eklenecek.
+           Şu an butonu kilitliyor ve konsola yazıyor. */
+        function reportSpam() {
+            const btn = document.getElementById('btnReport');
+
+            if (!confirm('Bu ilanı spam olarak bildirmek istediğinize emin misiniz?')) return;
+
+            btn.textContent = 'Reporting...';
+            btn.disabled = true;
+
+
+            setTimeout(() => {
+                btn.textContent = '✅ Reported';
+                console.log('Spam bildirimi gönderildi.');
+            }, 800);
+        }
+
+        function updateUserCard(userName, memberSince) {
+            const initial = userName ? userName.charAt(0).toUpperCase() : 'U';
+            document.getElementById('avatarInitial').textContent = initial;
+            document.getElementById('userName').textContent = userName || 'User';
+            document.getElementById('memberSince').textContent = memberSince || '';
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+.c-card { 
+    border: none; 
+    border-radius: 12px; /*Köşe yuvarlama*/
+    transition: all 0.3s ease; 
+    overflow: hidden;/*Taşmayı gizler*/
+    background: var(--color-white);
+    position: relative; /* Badge'in düzgün durması için şart */
+}
+
+.c-card__img { 
+    height: 240px; /*Eşit görsel yükseklik */
+    width: 100%;
+    object-fit: cover; /* Görseli bozmadan sığdırır */
+    object-position: center;//*Kırpma işlemi görselin merkezinden yapılır*/
+}
+
+.c-card__badge { 
+    position: absolute; 
+    top: 12px; /*Üst köşeye 12px boşlukla yerleşir*/
+    left: 12px; /*Sol köşeye 12px boşlukla yerleşir*/
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;/*Okunabilirliği artırır*/
+    text-transform: uppercase;/*Metin her zaman büyük harf görünür*/
+    border-radius: 4px;
+    z-index: 10;/*Katman sırası*/
+    background-color: var(--color-accent); 
+    color: var(--color-white);
+}
+
+.c-card__accent { 
+    color: var(--color-primary); 
+    font-weight: 600; 
+    font-size: 0.75rem; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;/*Büyükharfli metinlerde okunabilirliği artırır*/
+}

@@ -1,0 +1,6 @@
+@import "utils/_variables.css";/*Tüm modüller buradan sırayla import edilir*/
+@import "base/_reset.css";
+@import "components/_navbar.css";
+@import "components/_card.css";
+@import "components/_filter.css";
+@import "components/_buttons.css";

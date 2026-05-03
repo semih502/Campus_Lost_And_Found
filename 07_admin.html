@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Panel | Campus Lost & Found</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+
+    <style>
+      
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* --- Navbar --- */
+        .staff-navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+
+        .staff-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.85);
+        }
+
+        /* --- Stat Cards --- */
+        .stat-card {
+            border-radius: 16px;
+            border: none;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .stat-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.82rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            opacity: 0.15;
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* --- Main Panel Card --- */
+        .panel-card {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            background: #fff;
+        }
+
+        /* --- Table --- */
+        .admin-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #9ca3af;
+            border-bottom: 2px solid #f3f4f6;
+            padding: 0.85rem 1rem;
+            white-space: nowrap;
+        }
+
+        .admin-table td {
+            font-size: 0.875rem;
+            padding: 0.85rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f9fafb;
+            color: #374151;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* --- Status Badges --- */
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 600;
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            font-weight: 600;
+            font-size: 0.72rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* --- Action Buttons --- */
+        .btn-approve {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 8px;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+            color: #fff;
+            transform: scale(1.04);
+        }
+
+        .btn-reject {
+            background: #fff;
+            color: #ef4444;
+            border: 1.5px solid #ef4444;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 8px;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+
+        .btn-reject:hover {
+            background: #ef4444;
+            color: #fff;
+            transform: scale(1.04);
+        }
+
+        .btn-detail {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 8px;
+            transition: background 0.15s;
+        }
+
+        .btn-detail:hover {
+            background: #dbeafe;
+        }
+
+        /* --- Search & Filter Bar --- */
+        .filter-bar {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid #f3f4f6;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            padding: 7px 12px;
+            background: #fff;
+            color: #374151;
+        }
+
+        .filter-bar input:focus,
+        .filter-bar select:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        /* --- Toast Notification Container --- */
+        .toast-container-custom {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+        }
+
+        /* --- Detail Modal Header --- */
+        .modal-header-custom {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            border-radius: 16px 16px 0 0;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        /* --- Skeleton Loading Rows --- */
+        .skeleton-line {
+            height: 14px;
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+            background-size: 200% 100%;
+            border-radius: 6px;
+            animation: shimmer 1.4s infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* --- Tab Navigation --- */
+        .admin-tabs .nav-link {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .admin-tabs .nav-link.active {
+            background: #6366f1;
+            color: #fff;
+        }
+
+        .admin-tabs .nav-link:hover:not(.active) {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* --- Responsive Tweaks --- */
+        @media (max-width: 768px) {
+            .stat-card .stat-number { font-size: 1.8rem; }
+            .filter-bar .row > div  { margin-bottom: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="toast-container-custom" id="toastContainer"></div>
+
+
+<nav class="staff-navbar navbar navbar-expand-lg mb-4">
+    <div class="container">
+        <a class="navbar-brand navbar-brand-text" href="#">
+            🛡️ Staff Control Center
+        </a>
+        <div class="d-flex align-items-center gap-3 ms-auto">
+            
+            <span class="staff-badge">
+                👤 Staff: <strong id="staffName">Staff #102</strong>
+            </span>
+           
+            <button class="btn btn-sm btn-outline-light" onclick="handleLogout()">
+                Sign Out
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mb-5">
+
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-white position-relative overflow-hidden">
+                <!-- PHP: echo $totalActive -->
+                <div class="stat-number text-primary" id="statActive">—</div>
+                <div class="stat-label">Total Active Ads</div>
+                <span class="stat-icon">📋</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-white position-relative overflow-hidden">
+                <!-- PHP: echo $totalPending -->
+                <div class="stat-number text-warning" id="statPending">—</div>
+                <div class="stat-label">Pending Approval</div>
+                <span class="stat-icon">⏳</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-white position-relative overflow-hidden">
+                <!-- PHP: echo $totalDelivered -->
+                <div class="stat-number text-success" id="statDelivered">—</div>
+                <div class="stat-label">Successfully Delivered</div>
+                <span class="stat-icon">✅</span>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="panel-card p-4">
+
+        
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <ul class="nav admin-tabs gap-1" id="adminTabs">
+
+                <li class="nav-item">
+                    <button class="nav-link active" data-tab="pending" onclick="switchTab(this, 'pending')">
+                        ⏳ Pending
+
+                        <span class="badge bg-warning text-dark ms-1" id="pendingBadge">0</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="active" onclick="switchTab(this, 'active')">
+                        📋 Active
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="delivered" onclick="switchTab(this, 'delivered')">
+                        ✅ Delivered
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-tab="rejected" onclick="switchTab(this, 'rejected')">
+                        ❌ Rejected
+                    </button>
+                </li>
+            </ul>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadTableData(currentTab)">
+                🔄 Refresh
+            </button>
+        </div>
+
+        
+        <div class="filter-bar">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="form-control"
+                        placeholder="🔍 Search by title or submitter..."
+                        oninput="filterTable()"
+                    >
+                </div>
+                <div class="col-md-3">
+
+                    <select class="form-select" id="locationFilter" onchange="filterTable()">
+                        <option value="">All Locations</option>
+                        <option value="Central Library">Central Library</option>
+                        <option value="Engineering Block">Engineering Block</option>
+                        <option value="Cafeteria">Cafeteria</option>
+                        <option value="Sports Hall">Sports Hall</option>
+                        <option value="Student Center">Student Center</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" id="dateFilter" class="form-control" onchange="filterTable()">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table admin-table align-middle mb-0" id="adminTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" title="Select All">
+                        </th>
+                        <th>Ad Title</th>
+                        <th>Submitted By</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="empty-state d-none" id="emptyState">
+            <div class="empty-icon">📭</div>
+            <p class="fw-semibold text-muted">No records found for this category.</p>
+        </div>
+
+    
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+            <small class="text-muted" id="resultInfo">0 records found</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+
+   
+    <div class="panel-card p-3 mt-3 d-none" id="bulkActionBar">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="text-muted small fw-semibold" id="selectedCount">0 selected</span>
+            <button class="btn btn-approve" onclick="bulkApprove()">✓ Approve Selected</button>
+            <button class="btn btn-reject"  onclick="bulkReject()">✗ Reject Selected</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="clearSelection()">Cancel</button>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header-custom d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold" id="modalTitle">Ad Detail</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- Content injected dynamically by openDetail() -->
+            <div class="modal-body p-4" id="modalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <!-- These buttons are hidden for non-pending ads (see openDetail logic) -->
+                <button class="btn btn-approve" id="modalApproveBtn" onclick="approveFromModal()">✓ Approve</button>
+                <button class="btn btn-reject"  id="modalRejectBtn"  onclick="rejectFromModal()">✗ Reject</button>
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="fw-bold text-danger">❌ Reject Ad</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Provide a rejection reason (optional — will be sent to the submitter):</p>
+                <textarea
+                    class="form-control"
+                    id="rejectReason"
+                    rows="3"
+                    placeholder="e.g. The ad content violates campus regulations."
+                ></textarea>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-reject" onclick="confirmReject()">Confirm Reject</button>
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+
+    /* --- State Variables --- */
+    let currentTab     = 'pending';
+    let currentAdId    = null;      // ID of the ad open in the detail modal
+    let pendingRejectId = null;     // ID queued for the reject-reason modal
+    let allRows        = [];        // Full dataset used for client-side filtering
+    let selectedIds    = new Set(); // Row IDs selected via checkboxes
+
+    /* --- Initialise on page load --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadTableData('pending');
+        animateStatCards();
+    });
+
+    function loadStats() {
+        const stats = { active: 124, pending: 12, delivered: 85 };
+        updateStats(stats);
+    }
+
+    function updateStats(stats) {
+        animateNumber('statActive',    stats.active);
+        animateNumber('statPending',   stats.pending);
+        animateNumber('statDelivered', stats.delivered);
+        document.getElementById('pendingBadge').textContent = stats.pending;
+    }
+
+    /* Animated number counter used by stat cards */
+    function animateNumber(id, target) {
+        const el    = document.getElementById(id);
+        let current = 0;
+        const step  = Math.ceil(target / 30);
+        const timer = setInterval(() => {
+            current = Math.min(current + step, target);
+            el.textContent = current;
+            if (current >= target) clearInterval(timer);
+        }, 30);
+    }
+
+    function animateStatCards() {
+        document.querySelectorAll('.stat-card').forEach((card, i) => {
+            card.style.opacity    = '0';
+            card.style.transform  = 'translateY(20px)';
+            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            setTimeout(() => {
+                card.style.opacity   = '1';
+                card.style.transform = 'translateY(0)';
+            }, i * 100);
+        });
+    }
+
+    function loadTableData(tab) {
+        currentTab = tab;
+        showSkeletonRows(5);
+
+        setTimeout(() => {
+            const data = getMockData(tab);
+            allRows = data;
+            renderTable(data);
+            updateResultInfo(data.length);
+        }, 600); // simulated network delay — remove in production
+    }
+
+    function showSkeletonRows(count) {
+        document.getElementById('tableBody').innerHTML =
+            Array.from({ length: count }, () => `
+                <tr>
+                    <td><div class="skeleton-line" style="width:18px"></div></td>
+                    <td><div class="skeleton-line" style="width:80%"></div></td>
+                    <td><div class="skeleton-line" style="width:70%"></div></td>
+                    <td><div class="skeleton-line" style="width:60%"></div></td>
+                    <td><div class="skeleton-line" style="width:50%"></div></td>
+                    <td><div class="skeleton-line" style="width:65px"></div></td>
+                    <td><div class="skeleton-line" style="width:120px"></div></td>
+                </tr>
+            `).join('');
+    }
+
+    function renderTable(rows) {
+        const tbody      = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('d-none');
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+
+        tbody.innerHTML = rows.map(row => `
+            <tr data-id="${row.id}" class="table-row-animate">
+                <td>
+                    <input type="checkbox" class="row-checkbox" value="${row.id}" onchange="onRowSelect(this)">
+                </td>
+                <td class="fw-semibold">${escapeHtml(row.title)}</td>
+                <td>
+                    <div class="fw-medium">${escapeHtml(row.submitter)}</div>
+                    <!-- PHP: role is joined from the users table -->
+                    <div class="text-muted" style="font-size:0.75rem">${escapeHtml(row.role || 'Student')}</div>
+                </td>
+                <td>${escapeHtml(row.location)}</td>
+                <td style="white-space:nowrap">${escapeHtml(row.date)}</td>
+                <td>${getStatusBadge(row.status)}</td>
+                <td>
+                    <div class="d-flex gap-1 flex-wrap">
+                        <button class="btn-detail" onclick="openDetail(${row.id})">View</button>
+                        ${row.status === 'pending' ? `
+                            <button class="btn-approve" onclick="approveAd(${row.id}, this)">✓</button>
+                            <button class="btn-reject"  onclick="openRejectModal(${row.id})">✗</button>
+                        ` : ''}
+                        ${row.status === 'active' ? `
+                            <button
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="markDelivered(${row.id}, this)"
+                                style="font-size:0.75rem;padding:4px 10px;border-radius:8px">
+                                Mark Delivered
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        /* Staggered row entrance animation */
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.table-row-animate').forEach((row, i) => {
+                row.style.opacity    = '0';
+                row.style.transform  = 'translateX(-10px)';
+                row.style.transition = `opacity 0.3s ease ${i * 40}ms, transform 0.3s ease ${i * 40}ms`;
+                requestAnimationFrame(() => {
+                    row.style.opacity   = '1';
+                    row.style.transform = 'translateX(0)';
+                });
+            });
+        });
+    }
+
+    function getStatusBadge(status) {
+        const map = {
+            pending:   '<span class="badge-pending">⏳ Pending</span>',
+            active:    '<span class="badge-active">✅ Active</span>',
+            delivered: '<span class="badge-active">📦 Delivered</span>',
+            rejected:  '<span class="badge-rejected">❌ Rejected</span>',
+        };
+        return map[status] || status;
+    }
+
+
+    function approveAd(id, btn) {
+        btn.disabled    = true;
+        btn.textContent = '...';
+
+        setTimeout(() => {
+            removeRowFromTable(id);
+            updatePendingCount(-1);
+            showToast('success', '✓ Ad approved and published.');
+            closeDetailModal();
+        }, 400);
+    }
+
+  
+    function openRejectModal(id) {
+        pendingRejectId = id;
+        document.getElementById('rejectReason').value = '';
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function confirmReject() {
+        const reason = document.getElementById('rejectReason').value.trim();
+        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+
+        setTimeout(() => {
+            removeRowFromTable(pendingRejectId);
+            updatePendingCount(-1);
+            showToast('danger', '✗ Ad has been rejected.');
+            closeDetailModal();
+            pendingRejectId = null;
+        }, 300);
+    }
+
+    function markDelivered(id, btn) {
+        btn.disabled    = true;
+        btn.textContent = '...';
+
+        setTimeout(() => {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (row) {
+                row.querySelector('td:nth-child(6)').innerHTML = getStatusBadge('delivered');
+                row.querySelector('.d-flex').innerHTML = '';
+            }
+            showToast('success', '📦 Ad marked as delivered.');
+        }, 400);
+    }
+
+  
+    function openDetail(id) {
+        currentAdId = id;
+        document.getElementById('modalTitle').textContent = `Ad #${id} — Detail`;
+        document.getElementById('modalBody').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted mt-2 small">Loading details...</p>
+            </div>
+        `;
+
+        new bootstrap.Modal(document.getElementById('detailModal')).show();
+
+        // --- MOCK DATA — replace with fetch() ---
+        setTimeout(() => {
+            const row = allRows.find(r => r.id === id);
+            if (!row) return;
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="bg-light rounded-3 p-3 h-100">
+                            <h6 class="fw-bold mb-3 text-muted" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px">Ad Information</h6>
+                            <table class="table table-sm table-borderless mb-0" style="font-size:0.85rem">
+                                <tr><td class="text-muted">Title</td>       <td class="fw-semibold">${escapeHtml(row.title)}</td></tr>
+                                <tr><td class="text-muted">Location</td>    <td>${escapeHtml(row.location)}</td></tr>
+                                <tr><td class="text-muted">Date</td>        <td>${escapeHtml(row.date)}</td></tr>
+                                <tr><td class="text-muted">Status</td>      <td>${getStatusBadge(row.status)}</td></tr>
+                                <tr><td class="text-muted">Description</td> <td>${escapeHtml(row.description || 'No description provided.')}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light rounded-3 p-3 h-100">
+                            <h6 class="fw-bold mb-3 text-muted" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px">Submitter Information</h6>
+                            <table class="table table-sm table-borderless mb-0" style="font-size:0.85rem">
+                                <tr><td class="text-muted">Full Name</td>   <td class="fw-semibold">${escapeHtml(row.submitter)}</td></tr>
+                                <tr><td class="text-muted">Role</td>        <td>${escapeHtml(row.role || 'Student')}</td></tr>
+                                <!-- PHP: student_no and email are joined from the users table -->
+                                <tr><td class="text-muted">Student No</td>  <td>${escapeHtml(row.student_no || '—')}</td></tr>
+                                <tr><td class="text-muted">Email</td>       <td>${escapeHtml(row.email || '—')}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    ${row.image_url ? `
+                    <div class="col-12">
+                        <!-- PHP: image_url = 'uploads/' . $ad['image_filename'] -->
+                        <img src="${escapeHtml(row.image_url)}"
+                             alt="Ad image"
+                             class="img-fluid rounded-3 w-100"
+                             style="max-height:220px;object-fit:cover">
+                    </div>` : ''}
+                </div>
+            `;
+
+            const isPending = row.status === 'pending';
+            document.getElementById('modalApproveBtn').style.display = isPending ? '' : 'none';
+            document.getElementById('modalRejectBtn').style.display  = isPending ? '' : 'none';
+        }, 500);
+        // ----------------------------------------
+    }
+
+    function approveFromModal() {
+        approveAd(currentAdId, document.getElementById('modalApproveBtn'));
+    }
+
+    function rejectFromModal() {
+        bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+        openRejectModal(currentAdId);
+    }
+
+    function closeDetailModal() {
+        const m = bootstrap.Modal.getInstance(document.getElementById('detailModal'));
+        if (m) m.hide();
+    }
+
+    /* --- Tab Switching --- */
+    function switchTab(btn, tab) {
+        document.querySelectorAll('#adminTabs .nav-link').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        clearFilters();
+        loadTableData(tab);
+    }
+
+   
+    function filterTable() {
+        const search   = document.getElementById('searchInput').value.toLowerCase();
+        const location = document.getElementById('locationFilter').value.toLowerCase();
+        const date     = document.getElementById('dateFilter').value;
+
+        const filtered = allRows.filter(row => {
+            const matchSearch   = !search   || row.title.toLowerCase().includes(search) || row.submitter.toLowerCase().includes(search);
+            const matchLocation = !location || row.location.toLowerCase().includes(location);
+            const matchDate     = !date     || row.date.includes(date.split('-').reverse().join('.'));
+            return matchSearch && matchLocation && matchDate;
+        });
+
+        renderTable(filtered);
+        updateResultInfo(filtered.length);
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value    = '';
+        document.getElementById('locationFilter').value = '';
+        document.getElementById('dateFilter').value     = '';
+        renderTable(allRows);
+        updateResultInfo(allRows.length);
+    }
+
+    function updateResultInfo(count) {
+        document.getElementById('resultInfo').textContent = `${count} record(s) found`;
+    }
+
+    function onRowSelect(checkbox) {
+        checkbox.checked
+            ? selectedIds.add(parseInt(checkbox.value))
+            : selectedIds.delete(parseInt(checkbox.value));
+        updateBulkBar();
+    }
+
+    function toggleSelectAll(masterCheckbox) {
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = masterCheckbox.checked;
+            masterCheckbox.checked
+                ? selectedIds.add(parseInt(cb.value))
+                : selectedIds.delete(parseInt(cb.value));
+        });
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        const bar   = document.getElementById('bulkActionBar');
+        const count = selectedIds.size;
+        if (count > 0) {
+            bar.classList.remove('d-none');
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+        } else {
+            bar.classList.add('d-none');
+        }
+    }
+
+    function clearSelection() {
+        selectedIds.clear();
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+        updateBulkBar();
+    }
+
+    function bulkApprove() {
+        if (selectedIds.size === 0) return;
+        const ids = [...selectedIds];
+
+        ids.forEach(id => removeRowFromTable(id));
+        updatePendingCount(-ids.length);
+        showToast('success', `✓ ${ids.length} ad(s) approved.`);
+        clearSelection();
+    }
+
+   
+    function bulkReject() {
+        if (selectedIds.size === 0) return;
+        const ids = [...selectedIds];
+
+       
+        ids.forEach(id => removeRowFromTable(id));
+        updatePendingCount(-ids.length);
+        showToast('danger', `✗ ${ids.length} ad(s) rejected.`);
+        clearSelection();
+      
+    }
+
+    /* Helper: slide a row out, then remove it from the DOM and allRows */
+    function removeRowFromTable(id) {
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        if (!row) return;
+
+        row.style.transition = 'opacity 0.3s, transform 0.3s';
+        row.style.opacity    = '0';
+        row.style.transform  = 'translateX(30px)';
+
+        setTimeout(() => {
+            row.remove();
+            allRows = allRows.filter(r => r.id !== id);
+            updateResultInfo(document.querySelectorAll('#tableBody tr').length);
+            if (!document.querySelector('#tableBody tr')) {
+                document.getElementById('emptyState').classList.remove('d-none');
+            }
+        }, 300);
+    }
+
+    /* Helper: keep the pending badge and stat card in sync after actions */
+    function updatePendingCount(delta) {
+        const badge  = document.getElementById('pendingBadge');
+        const statEl = document.getElementById('statPending');
+        const newVal = Math.max(0, (parseInt(badge.textContent) || 0) + delta);
+        badge.textContent  = newVal;
+        statEl.textContent = newVal;
+    }
+
+    /* ============================================================
+       TOAST NOTIFICATION
+       Types: 'success' | 'danger' | 'warning' | 'info'
+       ============================================================ */
+    function showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        const colorMap  = { success: '#10b981', danger: '#ef4444', warning: '#f59e0b', info: '#6366f1' };
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: #1a1a2e;
+            color: #fff;
+            border-left: 4px solid ${colorMap[type] || '#6366f1'};
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            transform: translateX(120%);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            min-width: 260px;
+            max-width: 360px;
+        `;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
+
+        setTimeout(() => {
+            toast.style.opacity   = '0';
+            toast.style.transform = 'translateX(120%)';
+            setTimeout(() => toast.remove(), 350);
+        }, 3500);
+    }
+
+
+    function handleLogout() {
+        if (!confirm('Are you sure you want to sign out?')) return;
+        showToast('info', 'Signing out...');
+        setTimeout(() => {
+            // PHP: Uncomment the line below to enable real logout
+            // window.location.href = 'logout.php';
+            showToast('warning', '⚠️ logout.php not connected (dev mode)');
+        }, 500);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.content || '';
+    }
+
+    function getMockData(tab) {
+        const allData = [
+            { id: 1, title: 'Blue Backpack',        submitter: 'Beyza Nur Yilmaz', role: 'Student',    student_no: '20190001', email: 'beyza@campus.edu',  location: 'Central Library',   date: '29.04.2026', status: 'pending',   description: 'Blue backpack with a laptop compartment.',  image_url: '' },
+            { id: 2, title: 'Samsung Headphones',   submitter: 'Mehmet Demir',     role: 'Student',    student_no: '20200045', email: 'mehmet@campus.edu', location: 'Cafeteria',         date: '28.04.2026', status: 'pending',   description: 'Black wireless headphones, no box.',        image_url: '' },
+            { id: 3, title: 'Key Ring',              submitter: 'Selin Celik',      role: 'Researcher', student_no: '',         email: 'selin@campus.edu',  location: 'Sports Hall',       date: '27.04.2026', status: 'pending',   description: '3 keys on a red plastic key ring.',         image_url: '' },
+            { id: 4, title: 'Laptop Charger',        submitter: 'Ali Kaya',         role: 'Student',    student_no: '20210088', email: 'ali@campus.edu',    location: 'Engineering Block', date: '26.04.2026', status: 'active',    description: 'Black Type-C charging cable.',              image_url: '' },
+            { id: 5, title: 'Student ID Card',       submitter: 'Fatma Arslan',     role: 'Student',    student_no: '20180033', email: 'fatma@campus.edu',  location: 'Student Center',    date: '25.04.2026', status: 'active',    description: 'University student identification card.',   image_url: '' },
+            { id: 6, title: 'Water Bottle',          submitter: 'Burak Sahin',      role: 'Student',    student_no: '20220010', email: 'burak@campus.edu',  location: 'Sports Hall',       date: '24.04.2026', status: 'delivered', description: 'Green thermos-style water bottle.',         image_url: '' },
+            { id: 7, title: 'Scientific Calculator', submitter: 'Deniz Yildiz',     role: 'Student',    student_no: '20190055', email: 'deniz@campus.edu',  location: 'Engineering Block', date: '23.04.2026', status: 'rejected',  description: 'Scientific calculator, model unknown.',    image_url: '' },
+        ];
+        return allData.filter(r => r.status === tab);
+    }
+    /* --- END MOCK DATA --- */
+
+</script>
+</body>
+</html>

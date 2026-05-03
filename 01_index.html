@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!--Türkçe karakterler için-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!--Mobil cihazlar için otomatik boyutlandırma-->
+    <title>Campus Lost &amp; Found | Home</title>
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> <!--Bootstrap kütüphanesini dışarıdan yükler-->
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/main.css"> <!-- Ana CSS dosyası -->
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg c-navbar shadow mb-4">
+        <div class="container">
+
+            <a class="navbar-brand c-navbar__brand" href="index.html">
+                <span>🎓</span> Campus Lost &amp; Found
+            </a>
+
+            <!--Mobilde görünür, masaüstünde gizlenir -->
+            <button
+                class="navbar-toggler border-0"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavMenu"
+                aria-controls="mainNavMenu"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!--Mobilde açılır/kapanır menü -->
+            <div class="collapse navbar-collapse" id="mainNavMenu">
+                <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
+                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ Post New Ad</a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+
+            <aside class="col-md-3 mb-4">
+                <div class="c-filter shadow-sm p-4 bg-white rounded-4">
+
+                    <h5 class="fw-bold mb-3 c-filter__title">Search</h5>
+
+                    <label for="searchInput" class="visually-hidden">Search listings</label>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="form-control mb-4 py-2"
+                        placeholder="Looking for something?"
+                        aria-label="Search listings"
+                    >
+
+                    <!-- Kategori Filtresi -->
+                    <h6 class="fw-bold text-muted small text-uppercase mb-3">Categories</h6>
+                    <label for="categorySelect" class="visually-hidden">Select category</label>
+                    <select id="categorySelect" class="form-select c-select mb-4 py-2 rounded-3">
+                        <option value="0" selected>🔍 All Categories</option>
+
+                        <optgroup label="Technology">
+                            <option value="1">Electronics (Laptop, Phone, Charger)</option>
+                            <option value="2">Computer Accessories (Mouse, Flash Drive)</option>
+                        </optgroup>
+
+                        <optgroup label="Personal Items">
+                            <option value="3">Wallets &amp; ID Cards</option>
+                            <option value="4">Keys &amp; Keychains</option>
+                            <option value="5">Bags &amp; Backpacks</option>
+                        </optgroup>
+
+                        <optgroup label="Academic">
+                            <option value="6">Books &amp; Notebooks</option>
+                            <option value="7">Stationery (Pens, Calculators)</option>
+                        </optgroup>
+
+                        <optgroup label="Other">
+                            <option value="8">Clothing &amp; Accessories</option>
+                            <option value="9">Sports &amp; Hobby Gear</option>
+                            <option value="10">Miscellaneous</option>
+                        </optgroup>
+                    </select>
+
+                    <!-- Durum Filtresi -->
+                    <h6 class="fw-bold text-muted small text-uppercase mb-3">Status</h6>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkLost">
+                            <label class="form-check-label" for="checkLost">Lost Items</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkFound">
+                            <label class="form-check-label" for="checkFound">Found Items</label>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="filterBtn"
+                        class="btn btn-dark w-100 py-2 fw-bold text-uppercase"
+                        onclick="applyFilters()"
+                    >
+                        Filter Results
+                    </button>
+
+                </div>
+            </aside>
+            <!-- /FİLTRE PANELİ -->
+
+
+            <!-- =============================================
+                 İLAN KARTLARI
+                 TODO: Kartlar dinamik olarak backend'den
+                 render edilecek. Aşağıdaki örnek kart
+                 bir template görevi görmektedir.
+            ============================================= -->
+            <main class="col-md-9">
+                <div class="row" id="listingsContainer">
+
+                    <!-- Örnek kart — ilerleyen aşamada JS/backend ile doldurulacak -->
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card c-card shadow-sm h-100 border-0">
+                            <span class="badge bg-danger c-card__badge">Lost</span>
+                            <img
+                                src="https://images.unsplash.com/photo-1627123424574-724758594e93?w=400"
+                                class="card-img-top c-card__img"
+                                alt="Black leather wallet"
+                                loading="lazy"
+                            >
+                            <div class="card-body p-3">
+                                <span class="c-card__accent d-block mb-1 text-primary small fw-bold">
+                                    Wallet &amp; Bags
+                                </span>
+                                <h6 class="card-title fw-bold mb-2">Black Leather Wallet</h6>
+                                <p class="card-text text-muted small mb-0">
+                                    Lost near Central Cafeteria.
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white border-0 p-3 pt-0">
+                                <a href="details.html" class="btn btn-outline-dark btn-sm w-100 fw-bold">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Örnek kart -->
+
+                </div>
+            </main>
+            <!-- /İLAN KARTLARI -->
+
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- =============================================
+         FİLTRELEME FONKSİYONU
+         Düzeltme 3: Buton artık bu fonksiyonu çağırır.
+         Şu an sadece konsola yazdırıyor;
+         ilerleyen aşamada backend/API bağlantısı buraya eklenir.
+    ============================================= -->
+    <script>
+        function applyFilters() {
+            const query    = document.getElementById('searchInput').value.trim();
+            const category = document.getElementById('categorySelect').value;
+            const lostOnly = document.getElementById('checkLost').checked;
+            const foundOnly = document.getElementById('checkFound').checked;
+
+            // TODO: Bu değerleri backend'e gönderin veya
+            //       mevcut kartları JS ile filtreyin.
+            console.log('Filtre uygulandı:', { query, category, lostOnly, foundOnly });
+
+            // Örnek: kullanıcıya geri bildirim
+            const btn = document.getElementById('filterBtn');
+            btn.textContent = 'Filtering...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.textContent = 'Filter Results';
+                btn.disabled = false;
+            }, 800);
+        }
+    </script>
+
+</body>
+</html>

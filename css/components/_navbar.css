@@ -1,0 +1,23 @@
+/* _navbar.css */
+
+.c-navbar {
+    background-color: var(--color-primary);
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /*Navbar'ı sayfadan ayırır,derinlik*/
+}
+
+.c-navbar__brand {
+    font-family: var(--font-heading);/*Marka ismi için özel font*/
+    color: var(--color-white) !important;/*!important Bootstrap'in renk override'ını engellemek için */
+    font-size: 1.5rem;
+    font-weight: 700; /* Marka isminin daha belirgin olması için */
+    display: flex;/*Logo ve metin yan yana hizalanabilir*/
+    align-items: center;/*Logo ile metnin tam ortada hizalanmasını sağlar*/
+    gap: 10px; /* Logo/emoji ile metin arasındaki mesafeyi ayarlar */
+    transition: opacity 0.3s ease;
+}
+
+.c-navbar__brand:hover {
+    opacity: 0.85; /* Üzerine gelindiğinde hafif bir tepki vermesi için */
+    color: var(--color-white) !important;
+}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | Campus Lost &amp; Found</title>
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Ana modüler CSS bağlantısı -->
+    <link rel="stylesheet" href="css/main.css">
+
+    <style>
+        .chat-inbox      { height: 70vh; }
+        .message-list    { overflow-y: auto; border-right: 1px solid #eee; }
+        .message-content { overflow-y: auto; background: #f8f9fa; }
+        .msg-bubble      { max-width: 75%; border-radius: 15px; padding: 10px 15px; }
+        .msg-sent        { background-color: var(--primary-color, #1a237e); color: white; margin-left: auto; }
+        .msg-received    { background-color: #e9ecef; color: #333; }
+        .c-avatar        { width: 40px; height: 40px; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg c-navbar shadow mb-4">
+        <div class="container">
+
+            <!-- Marka / Logo -->
+            <a class="navbar-brand c-navbar__brand" href="index.html">
+                <span>🎓</span> Campus Lost &amp; Found
+            </a>
+
+            <button
+                class="navbar-toggler border-0"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavMenu"
+                aria-controls="mainNavMenu"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavMenu">
+                <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
+                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
+                    <!-- Aktif sayfa vurgusu korundu -->
+                    <a class="nav-link text-white active fw-bold" href="messages.html">Messages</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ New Ad</a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+
+    <div class="container mb-5">
+        <div class="c-card shadow-sm border-0 rounded-4 bg-white overflow-hidden">
+            <div class="row g-0 chat-inbox">
+
+                <aside class="col-md-4 message-list">
+                    <div class="p-3 border-bottom bg-light">
+                        <h5 class="fw-bold mb-0">Conversations</h5>
+                    </div>
+
+                    <div class="list-group list-group-flush" id="conversationList">
+
+                        <a href="#" class="list-group-item list-group-item-action p-3 active border-0">
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
+                                    data-name="John Doe"
+                                ></div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0 fw-bold">John Doe</h6>
+                                    <small class="opacity-75">Re: Black Leather Wallet</small>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Diğer konuşmalar -->
+                        <a href="#" class="list-group-item list-group-item-action p-3 border-0">
+                            <div class="d-flex align-items-center">
+                                <div
+                                    class="c-avatar rounded-circle bg-info text-white d-flex align-items-center justify-content-center fw-bold"
+                                    data-name="Alice Smith"
+                                ></div>
+                                <div class="ms-3">
+                                    <h6 class="mb-0 fw-bold">Alice Smith</h6>
+                                    <small class="text-muted">Re: Sony Headphones</small>
+                                </div>
+                            </div>
+                        </a>
+
+                    </div>
+                </aside>
+     
+                <main class="col-md-8 d-flex flex-column">
+
+                    <!-- Sohbet Başlığı -->
+                    <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
+                        <h6 class="mb-0 fw-bold">John Doe</h6>
+                        <span class="badge bg-danger">Lost Item</span>
+                    </div>
+
+                    <div class="message-content flex-grow-1 p-4 d-flex flex-column gap-3" id="messageFlow">
+
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <div class="msg-bubble msg-received">
+                                Hello! I think I found your wallet at the cafeteria.
+                            </div>
+                            <small class="text-muted ms-1" style="font-size: 11px;">10:32 AM</small>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <div class="msg-bubble msg-sent shadow-sm">
+                                That's great! Does it have a student ID inside?
+                            </div>
+                            <small class="text-muted me-1" style="font-size: 11px;">10:34 AM</small>
+                        </div>
+
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <div class="msg-bubble msg-received">
+                                Yes, it says "Beyza Nur". When can we meet?
+                            </div>
+                            <small class="text-muted ms-1" style="font-size: 11px;">10:35 AM</small>
+                        </div>
+
+                    </div>
+
+                    <div class="p-3 border-top bg-white">
+                        <form class="d-flex gap-2" id="messageForm" novalidate>
+
+                            <label for="msgInput" class="visually-hidden">Type a message</label>
+                            <input
+                                type="text"
+                                id="msgInput"
+                                class="form-control py-2"
+                                placeholder="Type your message here..."
+                                aria-label="Type a message"
+                                autocomplete="off"
+                                maxlength="500"
+                            >
+                            <button
+                                type="submit"
+                                id="sendBtn"
+                                class="btn c-btn-primary px-4 fw-bold"
+                            >
+                                Send
+                            </button>
+
+                        </form>
+                    </div>
+                    <!-- /Mesaj Giriş Alanı -->
+
+                </main>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+      
+        document.querySelectorAll('[data-name]').forEach(function (el) {
+            const name    = el.getAttribute('data-name') || '';
+            const parts   = name.trim().split(' ');
+            const initials = parts.length >= 2
+                ? parts[0][0].toUpperCase() + parts[1][0].toUpperCase()
+                : parts[0][0].toUpperCase();
+            el.textContent = initials;
+        });
+
+
+        document.getElementById('messageForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        document.getElementById('msgInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+
+        function sendMessage() {
+            const input   = document.getElementById('msgInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const text    = input.value.trim();
+
+            // Boş mesaj koruması
+            if (!text) return;
+
+            // Butonu kilitle — çift gönderim engellenir
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+
+
+            const now   = new Date();
+            const saat  = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-flex flex-column align-items-end gap-1';
+            wrapper.innerHTML = `
+                <div class="msg-bubble msg-sent shadow-sm">${escapeHtml(text)}</div>
+                <small class="text-muted me-1" style="font-size:11px;">${saat}</small>
+            `;
+
+            const flow = document.getElementById('messageFlow');
+            flow.appendChild(wrapper);
+
+            flow.scrollTop = flow.scrollHeight;
+
+            // Input'u temizle, butonu serbest bırak
+            input.value = '';
+            sendBtn.textContent = 'Send';
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        (function () {
+            const flow = document.getElementById('messageFlow');
+            flow.scrollTop = flow.scrollHeight;
+        })();
+
+    </script>
+
+</body>
+</html>

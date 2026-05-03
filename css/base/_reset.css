@@ -1,0 +1,15 @@
+body { 
+    background-color: var(--color-bg-light); /*var () kullanılmasıyla  Renk ve font değişikliği gereken durumlarda tek bir yerden güncelleme yapılabilir*/
+    font-family: var(--font-body); /*Gözde metinleri için font*/
+    color: var(--color-text);
+    margin: 0;/*Varsayılan Margin değeri 0*/
+    padding: 0;/*Varsayılan Padding değeri 0*/
+    line-height: 1.5;/* Okunabilirliği artırır*/
+    color-scheme: light dark; /* Dark mode için tarayıcıya ipucu verir */
+}
+
+h1, h2, h3, h4, h5,h6 {
+    font-family: var(--font-heading);
+
+   
+}

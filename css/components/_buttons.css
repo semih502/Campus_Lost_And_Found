@@ -1,0 +1,24 @@
+/* _buttons.css içerisinde */
+
+.c-btn-primary {
+    background-color: var(--color-bg-hover);
+    color: var(--color-primary);/*Metin rengi*/
+    font-weight: 600;/*Yazı kalınlığı*/
+    border-radius: 8px;/*Köşe yuvarlama*/
+    padding: 10px 20px; /*Butona tıklanabilir alan kazandırır*/
+    border: 1px solid var(--color-primary); /*Buton için çerçeve*/
+    transition: all 0.3s ease; /* Hover geçişini için*/
+    cursor: pointer;
+    
+}
+
+.c-btn-primary:hover {
+    background-color: #f1f1f1;
+    transform: translateY(-2px); /* Hafif bir yukarı kalkma efekti */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.c-btn-primary:active {
+    transform: translateY(0); /*Tıklanınca basılma hissi*/
+    box-shadow: none;
+}
