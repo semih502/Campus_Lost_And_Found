@@ -28,7 +28,7 @@
         <div class="container">
 
             <!-- Marka / Logo -->
-            <a class="navbar-brand c-navbar__brand" href="index.html">
+            <a class="navbar-brand c-navbar__brand" href="01_index.html">
                 <span>🎓</span> Campus Lost &amp; Found
             </a>
 
@@ -46,10 +46,10 @@
 
             <div class="collapse navbar-collapse" id="mainNavMenu">
                 <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
-                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
+                    <a class="nav-link text-white" href="05_dashboard.html">My Listings</a>
                     <!-- Aktif sayfa vurgusu korundu -->
-                    <a class="nav-link text-white active fw-bold" href="messages.html">Messages</a>
-                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ New Ad</a>
+                    <a class="nav-link text-white active fw-bold" href="06_messages.html">Messages</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="03_create-ad.html">+ New Ad</a>
                 </div>
             </div>
 
@@ -67,34 +67,11 @@
                     </div>
 
                     <div class="list-group list-group-flush" id="conversationList">
-
-                        <a href="#" class="list-group-item list-group-item-action p-3 active border-0">
-                            <div class="d-flex align-items-center">
-                                <div
-                                    class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
-                                    data-name="John Doe"
-                                ></div>
-                                <div class="ms-3">
-                                    <h6 class="mb-0 fw-bold">John Doe</h6>
-                                    <small class="opacity-75">Re: Black Leather Wallet</small>
-                                </div>
-                            </div>
-                        </a>
-
-                        <!-- Diğer konuşmalar -->
-                        <a href="#" class="list-group-item list-group-item-action p-3 border-0">
-                            <div class="d-flex align-items-center">
-                                <div
-                                    class="c-avatar rounded-circle bg-info text-white d-flex align-items-center justify-content-center fw-bold"
-                                    data-name="Alice Smith"
-                                ></div>
-                                <div class="ms-3">
-                                    <h6 class="mb-0 fw-bold">Alice Smith</h6>
-                                    <small class="text-muted">Re: Sony Headphones</small>
-                                </div>
-                            </div>
-                        </a>
-
+                        <!-- Dinamik: get_conversations.php'den yüklenir -->
+                        <div class="text-center py-4" id="convLoading">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <p class="text-muted small mt-1 mb-0">Loading...</p>
+                        </div>
                     </div>
                 </aside>
      
@@ -102,33 +79,16 @@
 
                     <!-- Sohbet Başlığı -->
                     <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
-                        <h6 class="mb-0 fw-bold">John Doe</h6>
-                        <span class="badge bg-danger">Lost Item</span>
+                        <h6 class="mb-0 fw-bold" id="chatPartnerName">Select a conversation</h6>
+                        <span class="badge bg-secondary" id="chatItemBadge" style="display:none;"></span>
                     </div>
 
                     <div class="message-content flex-grow-1 p-4 d-flex flex-column gap-3" id="messageFlow">
-
-                        <div class="d-flex flex-column align-items-start gap-1">
-                            <div class="msg-bubble msg-received">
-                                Hello! I think I found your wallet at the cafeteria.
-                            </div>
-                            <small class="text-muted ms-1" style="font-size: 11px;">10:32 AM</small>
+                        <!-- Dinamik: get_messages.php'den yüklenir -->
+                        <div class="text-center text-muted py-5" id="emptyChat">
+                            <span style="font-size:2.5rem;">💬</span>
+                            <p class="mt-2">Select a conversation to view messages.</p>
                         </div>
-
-                        <div class="d-flex flex-column align-items-end gap-1">
-                            <div class="msg-bubble msg-sent shadow-sm">
-                                That's great! Does it have a student ID inside?
-                            </div>
-                            <small class="text-muted me-1" style="font-size: 11px;">10:34 AM</small>
-                        </div>
-
-                        <div class="d-flex flex-column align-items-start gap-1">
-                            <div class="msg-bubble msg-received">
-                                Yes, it says "Beyza Nur". When can we meet?
-                            </div>
-                            <small class="text-muted ms-1" style="font-size: 11px;">10:35 AM</small>
-                        </div>
-
                     </div>
 
                     <div class="p-3 border-top bg-white">
@@ -143,11 +103,13 @@
                                 aria-label="Type a message"
                                 autocomplete="off"
                                 maxlength="500"
+                                disabled
                             >
                             <button
                                 type="submit"
                                 id="sendBtn"
                                 class="btn c-btn-primary px-4 fw-bold"
+                                disabled
                             >
                                 Send
                             </button>
@@ -167,18 +129,219 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        /* ============================================================
+         *  GLOBAL DEĞİŞKENLER
+         * ============================================================ */
+        let currentUserId  = null;  // Giriş yapmış kullanıcı ID'si
+        let activePartnerId = null; // Seçili konuşma partneri
+        let refreshTimer    = null; // Otomatik yenileme zamanlayıcısı
 
-      
-        document.querySelectorAll('[data-name]').forEach(function (el) {
-            const name    = el.getAttribute('data-name') || '';
-            const parts   = name.trim().split(' ');
-            const initials = parts.length >= 2
-                ? parts[0][0].toUpperCase() + parts[1][0].toUpperCase()
+        /* ============================================================
+         *  XSS KORUMASI
+         * ============================================================ */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text || ''));
+            return div.innerHTML;
+        }
+
+        /* ============================================================
+         *  İNİSYAL OLUŞTUR — İsimden avatar harfleri
+         * ============================================================ */
+        function getInitials(name) {
+            if (!name) return '?';
+            const parts = name.trim().split(' ');
+            return parts.length >= 2
+                ? (parts[0][0] + parts[1][0]).toUpperCase()
                 : parts[0][0].toUpperCase();
-            el.textContent = initials;
-        });
+        }
 
+        /* ============================================================
+         *  KONUŞMA LİSTESİNİ YÜKLE (Sol Menü)
+         * ============================================================ */
+        function loadConversations() {
+            fetch('php/get_conversations.php')
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '04_auth.html';
+                        throw new Error('UNAUTHORIZED');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        document.getElementById('conversationList').innerHTML =
+                            '<p class="text-muted text-center p-3">Konuşma bulunamadı.</p>';
+                        return;
+                    }
 
+                    currentUserId = data.current_user;
+                    const list = document.getElementById('conversationList');
+
+                    if (data.conversations.length === 0) {
+                        list.innerHTML = `
+                            <div class="text-center py-4">
+                                <span style="font-size:2rem;">📭</span>
+                                <p class="text-muted small mt-2 mb-0">No conversations yet.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    list.innerHTML = data.conversations.map(conv => {
+                        const isActive = parseInt(conv.partner_id) === activePartnerId;
+                        const preview = conv.last_message.length > 35
+                            ? conv.last_message.substring(0, 35) + '...'
+                            : conv.last_message;
+
+                        return `
+                            <a href="#" class="list-group-item list-group-item-action p-3 border-0 ${isActive ? 'active' : ''}"
+                               onclick="openConversation(${conv.partner_id}, '${escapeHtml(conv.partner_name)}'); return false;">
+                                <div class="d-flex align-items-center">
+                                    <div class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0">
+                                        ${getInitials(conv.partner_name)}
+                                    </div>
+                                    <div class="ms-3 overflow-hidden">
+                                        <h6 class="mb-0 fw-bold">${escapeHtml(conv.partner_name)}</h6>
+                                        <small class="${isActive ? 'opacity-75' : 'text-muted'}">${escapeHtml(preview)}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    }).join('');
+                })
+                .catch(error => {
+                    if (error.message === 'UNAUTHORIZED') return;
+                    console.error('Conversations Error:', error);
+                });
+        }
+
+        /* ============================================================
+         *  KONUŞMAYI AÇ — Partner'ın mesaj geçmişini yükle
+         * ============================================================ */
+        function openConversation(partnerId, partnerName) {
+            activePartnerId = partnerId;
+
+            // Başlığı güncelle
+            document.getElementById('chatPartnerName').textContent = partnerName;
+
+            // Input'u aktifleştir
+            document.getElementById('msgInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+
+            // Sol menüde aktif elemanı güncelle
+            loadConversations();
+
+            // Mesajları yükle
+            loadMessages(partnerId);
+
+            // Otomatik yenileme başlat (5 saniyede bir)
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(() => loadMessages(partnerId), 5000);
+        }
+
+        /* ============================================================
+         *  MESAJLARI YÜKLE — Seçili sohbetin geçmişi
+         * ============================================================ */
+        function loadMessages(partnerId) {
+            fetch('php/get_messages.php?partner_id=' + partnerId)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    const flow = document.getElementById('messageFlow');
+                    const wasAtBottom = flow.scrollTop + flow.clientHeight >= flow.scrollHeight - 50;
+
+                    flow.innerHTML = '';
+
+                    if (data.messages.length === 0) {
+                        flow.innerHTML = `
+                            <div class="text-center text-muted py-5">
+                                <span style="font-size:2rem;">✉️</span>
+                                <p class="mt-2">No messages yet. Start the conversation!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    data.messages.forEach(msg => {
+                        const isSent = parseInt(msg.sender_id) === currentUserId;
+                        const time = new Date(msg.created_at);
+                        const timeStr = time.getHours().toString().padStart(2, '0') + ':' +
+                                        time.getMinutes().toString().padStart(2, '0');
+
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'd-flex flex-column ' + (isSent ? 'align-items-end' : 'align-items-start') + ' gap-1';
+                        wrapper.innerHTML = `
+                            <div class="msg-bubble ${isSent ? 'msg-sent shadow-sm' : 'msg-received'}">
+                                ${escapeHtml(msg.content)}
+                            </div>
+                            <small class="text-muted ${isSent ? 'me-1' : 'ms-1'}" style="font-size: 11px;">${timeStr}</small>
+                        `;
+                        flow.appendChild(wrapper);
+                    });
+
+                    // Otomatik scroll (sadece zaten alttaysa)
+                    if (wasAtBottom || flow.scrollTop === 0) {
+                        flow.scrollTop = flow.scrollHeight;
+                    }
+                })
+                .catch(error => console.error('Messages Error:', error));
+        }
+
+        /* ============================================================
+         *  MESAJ GÖNDER — Form submit ve Enter tuşu
+         * ============================================================ */
+        function sendMessage() {
+            if (!activePartnerId) return;
+
+            const input   = document.getElementById('msgInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const text    = input.value.trim();
+
+            if (!text) return;
+
+            sendBtn.textContent = 'Sending...';
+            sendBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('receiver_id', activePartnerId);
+            formData.append('content', text);
+
+            fetch('php/send_message.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '04_auth.html';
+                    throw new Error('UNAUTHORIZED');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    // Mesajları yeniden yükle
+                    loadMessages(activePartnerId);
+                } else {
+                    alert('❌ ' + data.message);
+                }
+                sendBtn.textContent = 'Send';
+                sendBtn.disabled = false;
+                input.focus();
+            })
+            .catch(error => {
+                if (error.message === 'UNAUTHORIZED') return;
+                console.error('Send Error:', error);
+                sendBtn.textContent = 'Send';
+                sendBtn.disabled = false;
+            });
+        }
+
+        /* ============================================================
+         *  EVENT LISTENERS
+         * ============================================================ */
         document.getElementById('messageForm').addEventListener('submit', function (e) {
             e.preventDefault();
             sendMessage();
@@ -191,52 +354,24 @@
             }
         });
 
+        /* ============================================================
+         *  SAYFA YÜKLENDİĞİNDE — Konuşmaları yükle + URL param kontrolü
+         * ============================================================ */
+        document.addEventListener('DOMContentLoaded', function () {
+            loadConversations();
 
-        function sendMessage() {
-            const input   = document.getElementById('msgInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const text    = input.value.trim();
+            // URL'den partner parametresi varsa otomatik sohbet aç
+            // Örn: 06_messages.html?partner=5
+            const params = new URLSearchParams(window.location.search);
+            const partnerId = params.get('partner');
 
-            // Boş mesaj koruması
-            if (!text) return;
-
-            // Butonu kilitle — çift gönderim engellenir
-            sendBtn.textContent = 'Sending...';
-            sendBtn.disabled = true;
-
-
-            const now   = new Date();
-            const saat  = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-
-            const wrapper = document.createElement('div');
-            wrapper.className = 'd-flex flex-column align-items-end gap-1';
-            wrapper.innerHTML = `
-                <div class="msg-bubble msg-sent shadow-sm">${escapeHtml(text)}</div>
-                <small class="text-muted me-1" style="font-size:11px;">${saat}</small>
-            `;
-
-            const flow = document.getElementById('messageFlow');
-            flow.appendChild(wrapper);
-
-            flow.scrollTop = flow.scrollHeight;
-
-            // Input'u temizle, butonu serbest bırak
-            input.value = '';
-            sendBtn.textContent = 'Send';
-            sendBtn.disabled = false;
-            input.focus();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.appendChild(document.createTextNode(text));
-            return div.innerHTML;
-        }
-
-        (function () {
-            const flow = document.getElementById('messageFlow');
-            flow.scrollTop = flow.scrollHeight;
-        })();
+            if (partnerId) {
+                // Kısa gecikme ile konuşma listesi yüklendikten sonra aç
+                setTimeout(() => {
+                    openConversation(parseInt(partnerId), 'Loading...');
+                }, 500);
+            }
+        });
 
     </script>
 

@@ -16,7 +16,7 @@
     <nav class="navbar navbar-expand-lg c-navbar shadow mb-5">
         <div class="container">
 
-            <a class="navbar-brand c-navbar__brand" href="index.html">
+            <a class="navbar-brand c-navbar__brand" href="01_index.html">
                 <span>🎓</span> Campus Lost &amp; Found
             </a>
 
@@ -36,8 +36,8 @@
             <!--Mobilde açılır/kapanır -->
             <div class="collapse navbar-collapse" id="mainNavMenu">
                 <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
-                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
-                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ Post New Ad</a>
+                    <a class="nav-link text-white" href="05_dashboard.html">My Listings</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="03_create-ad.html">+ Post New Ad</a>
                 </div>
             </div>
 
@@ -175,17 +175,165 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        /* ============================================================
+         *  GLOBAL DEĞİŞKENLER — İlan verisi saklanır
+         * ============================================================ */
+        let currentItem = null; // Mevcut ilanın verisi
 
+        /* ============================================================
+         *  XSS Koruması
+         * ============================================================ */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text || ''));
+            return div.innerHTML;
+        }
+
+        /* ============================================================
+         *  SAYFA YÜKLENDİĞİNDE — İlan detaylarını yükle
+         * ============================================================ */
+        document.addEventListener('DOMContentLoaded', function () {
+            // URL'den ilan ID'sini al: 02_details.html?id=5
+            const params = new URLSearchParams(window.location.search);
+            const itemId = params.get('id');
+
+            if (!itemId) {
+                document.querySelector('.container.mb-5').innerHTML = `
+                    <div class="text-center py-5">
+                        <span style="font-size:3rem;">⚠️</span>
+                        <h4 class="text-muted mt-3">Geçersiz ilan. Lütfen ana sayfadan bir ilan seçin.</h4>
+                        <a href="01_index.html" class="btn btn-dark mt-3">← Back to Listings</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // ── İlan verilerini çek ──
+            fetch('php/get_item_details.php?id=' + itemId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentItem = data.item;
+                        renderItemDetails(currentItem);
+                    } else {
+                        document.querySelector('.container.mb-5').innerHTML = `
+                            <div class="text-center py-5">
+                                <span style="font-size:3rem;">🔍</span>
+                                <h4 class="text-muted mt-3">${escapeHtml(data.message)}</h4>
+                                <a href="01_index.html" class="btn btn-dark mt-3">← Back to Listings</a>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Item Details Error:', error);
+                    document.querySelector('.container.mb-5').innerHTML = `
+                        <div class="text-center py-5">
+                            <span style="font-size:3rem;">🔌</span>
+                            <h4 class="text-muted mt-3">Sunucuya bağlanılamadı.</h4>
+                            <a href="01_index.html" class="btn btn-dark mt-3">← Back to Listings</a>
+                        </div>
+                    `;
+                });
+        });
+
+        /* ============================================================
+         *  İLAN DETAYLARINI RENDER ET — DOM'u güncelle
+         * ============================================================ */
+        function renderItemDetails(item) {
+            // Fotoğraf
+            const imgEl = document.querySelector('.c-card__img');
+            if (item.photos && item.photos.length > 0) {
+                imgEl.src = item.photos[0].path;
+                imgEl.alt = item.title;
+            }
+
+            // Durum badge
+            const badgeEl = document.querySelector('.badge.px-3');
+            badgeEl.textContent = item.status;
+            badgeEl.className = 'badge px-3 py-2 ' + (item.status === 'Lost' ? 'bg-danger' : 'bg-success');
+
+            // Kategori
+            document.querySelector('.text-muted.fw-bold.small.text-uppercase').textContent = item.category;
+
+            // Başlık
+            document.querySelector('.c-detail__title').textContent = item.title;
+
+            // Konum
+            document.querySelectorAll('dd')[0].textContent = item.location;
+
+            // Tarih
+            const date = new Date(item.created_at);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.querySelectorAll('dd')[1].textContent = date.toLocaleDateString('en-US', options);
+
+            // Açıklama
+            document.querySelectorAll('dd')[2].textContent = item.description;
+
+            // İlan sahibi bilgisi
+            updateUserCard(item.owner_name, 'Member since ' + new Date(item.member_since).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+
+            // Sayfa başlığı
+            document.title = item.title + ' | Campus Lost & Found';
+        }
+
+
+        /* ============================================================
+         *  MESAJ GÖNDER — 'Message the Finder' butonuna bağlı
+         * ============================================================ */
         function openMessages() {
+            if (!currentItem) return;
+
             const btn = document.getElementById('btnMessage');
-            btn.textContent = 'Redirecting...';
+
+            // Prompt ile kullanıcıdan mesaj al
+            const messageText = prompt(
+                `"${currentItem.title}" ilanı hakkında mesajınızı yazın:`,
+                'Merhaba, ilanınızla ilgileniyorum.'
+            );
+
+            // İptal edildi veya boş
+            if (!messageText || !messageText.trim()) return;
+
+            btn.textContent = 'Sending...';
             btn.disabled = true;
 
-            // TODO: window.location.href = 'messages.html?ad=ILAN_ID';
-            setTimeout(() => {
+            // FormData oluştur
+            const formData = new FormData();
+            formData.append('receiver_id', currentItem.user_id);
+            formData.append('item_id', currentItem.id);
+            formData.append('content', messageText.trim());
+
+            fetch('php/send_message.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    alert('Mesaj göndermek için giriş yapmalısınız.');
+                    window.location.href = '04_auth.html';
+                    throw new Error('UNAUTHORIZED');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    // Mesajlar sayfasına yönlendir
+                    window.location.href = '06_messages.html?partner=' + currentItem.user_id;
+                } else {
+                    alert('❌ ' + data.message);
+                    btn.innerHTML = '<span>✉️</span> Message the Finder';
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                if (error.message === 'UNAUTHORIZED') return;
+                console.error('Send Message Error:', error);
+                alert('Mesaj gönderilirken bir hata oluştu.');
                 btn.innerHTML = '<span>✉️</span> Message the Finder';
                 btn.disabled = false;
-            }, 1000);
+            });
         }
 
 

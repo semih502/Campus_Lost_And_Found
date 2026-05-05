@@ -16,7 +16,7 @@
     <nav class="navbar navbar-expand-lg c-navbar shadow mb-5">
         <div class="container">
 
-            <a class="navbar-brand c-navbar__brand" href="index.html">
+            <a class="navbar-brand c-navbar__brand" href="01_index.html">
                 <span>🎓</span> Campus Lost &amp; Found
             </a>
 
@@ -36,8 +36,8 @@
             <!--Mobilde açılır/kapanır -->
             <div class="collapse navbar-collapse" id="mainNavMenu">
                 <div class="ms-auto d-flex align-items-center gap-3 mt-2 mt-lg-0">
-                    <a class="nav-link text-white" href="dashboard.html">My Listings</a>
-                    <a class="btn c-btn-primary px-4 shadow-sm" href="create-ad.html">+ Post New Ad</a>
+                    <a class="nav-link text-white" href="05_dashboard.html">My Listings</a>
+                    <a class="btn c-btn-primary px-4 shadow-sm" href="03_create-ad.html">+ Post New Ad</a>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@
                                      tarayıcı native validasyonunu devre dışı bırakır
                     ============================================= -->
                     <form
-                        action="upload_logic.php"
+                        action="php/upload_logic.php"
                         method="POST"
                         enctype="multipart/form-data"
                         id="newAdForm"
@@ -126,11 +126,8 @@
                                     class="form-select py-2"
                                     required
                                 >
-                                    <option value="" disabled selected>Select a category</option>
-                                    <option value="1">Electronics</option>
-                                    <option value="2">ID Cards &amp; Wallet</option>
-                                    <option value="3">Books &amp; Stationery</option>
-                                    <option value="4">Keys</option>
+                                    <!-- Seçenekler JS tarafından dinamik olarak doldurulur -->
+                                    <option value="" disabled selected>Loading categories...</option>
                                 </select>
                                 <div class="invalid-feedback">Please select a category.</div>
                             </div>
@@ -145,10 +142,8 @@
                                     class="form-select py-2"
                                     required
                                 >
-                                    <option value="" disabled selected>Select a location</option>
-                                    <option value="1">Central Library</option>
-                                    <option value="2">Engineering Faculty</option>
-                                    <option value="3">Student Center (Cafeteria)</option>
+                                    <!-- Seçenekler JS tarafından dinamik olarak doldurulur -->
+                                    <option value="" disabled selected>Loading locations...</option>
                                 </select>
                                 <div class="invalid-feedback">Please select a location.</div>
                             </div>
@@ -189,6 +184,9 @@
                         </div>
                         <!-- /Fotoğraf Yükleme -->
 
+                        <!-- İşlem mesaj alanı — PHP'den dönen hata/başarı mesajı burada gösterilir -->
+                        <div id="formAlert" class="alert d-none mb-3" role="alert"></div>
+
                         <div class="d-grid pt-3">
                             <button
                                 type="submit"
@@ -214,8 +212,93 @@
 
 
     <script>
+        /* ============================================================
+         *  Yardımcı Fonksiyonlar
+         * ============================================================ */
+
+        /**
+         * Kullanıcıya bildirim mesajı gösterir (Bootstrap alert).
+         * @param {string} message    - Gösterilecek mesaj
+         * @param {boolean} isSuccess - true: yeşil (success), false: kırmızı (danger)
+         */
+        function showAlert(message, isSuccess) {
+            const alertEl = document.getElementById('formAlert');
+            alertEl.className = 'alert mb-3 alert-' + (isSuccess ? 'success' : 'danger');
+            alertEl.textContent = message;
+            alertEl.classList.remove('d-none');
+        }
+
+        /**
+         * Alert mesajını gizler.
+         */
+        function hideAlert() {
+            const alertEl = document.getElementById('formAlert');
+            alertEl.classList.add('d-none');
+        }
 
 
+        /* ============================================================
+         *  DİNAMİK FORM SEÇENEKLERİ — Sayfa yüklendiğinde çalışır
+         * ============================================================
+         *  get_form_options.php'den categories ve locations verilerini
+         *  çeker, <select> menülerini dinamik olarak doldurur.
+         *  Böylece veritabanına yeni kayıt eklendiğinde HTML'e
+         *  dokunmaya gerek kalmaz.
+         * ============================================================ */
+        document.addEventListener('DOMContentLoaded', function () {
+
+            /**
+             * Bir <select> elementini verilen veri dizisiyle doldurur.
+             * @param {string} selectId      - Select elementinin ID'si
+             * @param {Array}  items          - { id, name } nesnelerinden oluşan dizi
+             * @param {string} placeholderText - İlk (disabled) seçeneğin metni
+             */
+            function populateSelect(selectId, items, placeholderText) {
+                const select = document.getElementById(selectId);
+                // Mevcut option'ları temizle
+                select.innerHTML = '';
+
+                // Placeholder (varsayılan seçenek) ekle
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.disabled = true;
+                placeholder.selected = true;
+                placeholder.textContent = placeholderText;
+                select.appendChild(placeholder);
+
+                // Veritabanından gelen her kayıt için option oluştur
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;        // Category_ID veya Location_ID
+                    option.textContent = item.name; // Category_Name veya Location_Name
+                    select.appendChild(option);
+                });
+            }
+
+            // ── AJAX İsteği — get_form_options.php ──
+            fetch('php/get_form_options.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // ✅ Veriler başarıyla geldi — select'leri doldur
+                        populateSelect('itemCategory', data.categories, 'Select a category');
+                        populateSelect('itemLocation', data.locations,  'Select a location');
+                    } else {
+                        // ❌ Veritabanı hatası
+                        console.error('Form verileri yüklenemedi:', data.message);
+                        showAlert('Form verileri yüklenirken hata oluştu. Sayfayı yenileyin.', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Form Options Fetch Hatası:', error);
+                    showAlert('Sunucuya bağlanılamadı. Form verileri yüklenemedi.', false);
+                });
+        });
+
+
+        /* ============================================================
+         *  Fotoğraf Boyut Kontrolü (Client-Side)
+         * ============================================================ */
         document.getElementById('itemPhoto').addEventListener('change', function () {
             const maxSize = 5 * 1024 * 1024; // 5MB (byte cinsinden)
             const errorEl = document.getElementById('photoError');
@@ -228,29 +311,89 @@
             }
         });
 
-        document.getElementById('newAdForm').addEventListener('submit', function (e) {
-            e.preventDefault(); // Önce validasyonu çalıştır
 
-            const form = this;
+        /* ============================================================
+         *  FORM GÖNDERİMİ — fetch API ile upload_logic.php'ye istek
+         * ============================================================ */
+        document.getElementById('newAdForm').addEventListener('submit', function (e) {
+            // Formun varsayılan gönderimini (sayfa yenileme) engelle.
+            // Böylece AJAX ile asenkron istek gönderebiliriz.
+            e.preventDefault();
+
+            const form      = this;
             const submitBtn = document.getElementById('submitBtn');
 
-            // Bootstrap validasyon class'larını uygula
+            // Önceki alert mesajını gizle
+            hideAlert();
+
+            // HTML5 form doğrulaması — geçersizse formu işaretleyip dur
             if (!form.checkValidity()) {
                 form.classList.add('was-validated');
-                return; // Hata varsa gönderme
+                return;
             }
 
-            // Çift tıklama koruması — details-fixed.html'deki pattern'la aynı
+            // ── Çift tıklama koruması ──
+            // Butonun metnini değiştirip disable ederek
+            // kullanıcının birden fazla istek göndermesini engelle.
             submitBtn.textContent = 'Publishing...';
             submitBtn.disabled = true;
 
-            setTimeout(() => {
-                console.log('Form gönderildi.');
-                
+            // ── AJAX İsteği — fetch API ──
+            // FormData nesnesi, formun tüm input değerlerini
+            // (metin + dosya) otomatik olarak toplar.
+            // enctype="multipart/form-data" fetch tarafında
+            // otomatik olarak ayarlanır (Content-Type header'ı
+            // set etmeyin — boundary parametresi kaybolur).
+            fetch('php/upload_logic.php', {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => {
+                // 401 Unauthorized — giriş yapılmamış
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        showAlert(data.message || 'Oturum süreniz dolmuş. Lütfen giriş yapın.', false);
+                        // 2 saniye sonra login sayfasına yönlendir
+                        setTimeout(() => {
+                            window.location.href = '04_auth.html';
+                        }, 2000);
+                        // İşlemi durdur — then zincirinin devam etmesini engelle
+                        throw new Error('UNAUTHORIZED');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // ✅ İlan başarıyla oluşturuldu
+                    showAlert(data.message, true);
+
+                    // Formu temizle
+                    form.reset();
+                    form.classList.remove('was-validated');
+
+                    // 1.5 saniye sonra dashboard sayfasına yönlendir.
+                    // Kullanıcı başarı mesajını görsün.
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '05_dashboard.html';
+                    }, 1500);
+                } else {
+                    // ❌ İlan oluşturulamadı — hata mesajını göster
+                    showAlert(data.message, false);
+                    submitBtn.textContent = 'Publish Listing';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                // UNAUTHORIZED hatası zaten handle edildi, tekrar gösterme
+                if (error.message === 'UNAUTHORIZED') return;
+
+                // Ağ hatası veya sunucu çökmesi durumu
+                console.error('Upload Fetch Hatası:', error);
+                showAlert('Sunucuya bağlanılamadı. Lütfen tekrar deneyin.', false);
                 submitBtn.textContent = 'Publish Listing';
                 submitBtn.disabled = false;
-                form.classList.remove('was-validated');
-            }, 1000);
+            });
         });
 
     </script>
