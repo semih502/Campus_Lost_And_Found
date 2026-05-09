@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Item Details | Campus Lost &amp; Found</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-lg c-navbar shadow mb-5">
@@ -21,15 +23,9 @@
             </a>
 
             <!--Mobilde görünür, masaüstünde gizlenir -->
-            <button
-                class="navbar-toggler border-0"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavMenu"
-                aria-controls="mainNavMenu"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNavMenu" aria-controls="mainNavMenu" aria-expanded="false"
+                aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -43,7 +39,7 @@
 
         </div>
     </nav>
-    
+
     <div class="container mb-5">
         <div class="row g-5">
 
@@ -60,14 +56,9 @@
                         Inline style → CSS'e taşınmalı: c-card__img class'ı
                         main.css'te object-fit ve min-height tanımlanacak.
                     -->
-                    <img
-                     src="https://images.unsplash.com/photo-1627123424574-724758594e93?w=800"
-                     class="img-fluid w-100 c-card__img"
-                     alt="Lost item photo — black leather wallet"
-                     loading="lazy"
-                     style="height: 400px; object-fit: cover; object-position: center;"
-                    
-                    >
+                    <img src="https://images.unsplash.com/photo-1627123424574-724758594e93?w=800"
+                        class="img-fluid w-100 c-card__img" alt="Lost item photo — black leather wallet" loading="lazy"
+                        style="height: 400px; object-fit: cover; object-position: center;">
                 </div>
             </div>
 
@@ -113,21 +104,9 @@
 
                 <!-- ─── Aksiyon Butonları ───────────────────── -->
                 <div class="d-grid gap-3">
-                    <button
-                        type="button"
-                        id="btnMessage"
-                        class="btn c-btn-primary py-3 fw-bold shadow-sm"
-                        onclick="openMessages()"
-                    >
+                    <button type="button" id="btnMessage" class="btn c-btn-primary py-3 fw-bold shadow-sm"
+                        onclick="openMessages()">
                         <span>✉️</span> Message the Finder
-                    </button>
-                    <button
-                        type="button"
-                        id="btnReport"
-                        class="btn btn-outline-dark py-3 fw-bold"
-                        onclick="reportSpam()"
-                    >
-                        <span>🚩</span> Report as Spam
                     </button>
                 </div>
 
@@ -136,28 +115,16 @@
                     <hr class="text-muted opacity-25">
                     <p class="text-muted small fw-bold text-uppercase mb-2">My Listing Actions</p>
                     <div class="d-grid gap-2">
-                        <button
-                            type="button"
-                            id="btnResolve"
-                            class="btn btn-success py-2 fw-bold"
-                            onclick="resolveItem()"
-                        >
+                        <button type="button" id="btnResolve" class="btn btn-success py-2 fw-bold"
+                            onclick="resolveItem()">
                             ✅ Mark as Resolved
                         </button>
-                        <button
-                            type="button"
-                            id="btnReopen"
-                            class="btn btn-outline-secondary py-2 fw-bold d-none"
-                            onclick="reopenItem()"
-                        >
+                        <button type="button" id="btnReopen" class="btn btn-outline-secondary py-2 fw-bold d-none"
+                            onclick="reopenItem()">
                             🔄 Reopen Listing
                         </button>
-                        <button
-                            type="button"
-                            id="btnDelete"
-                            class="btn btn-outline-danger py-2 fw-bold"
-                            onclick="deleteItem()"
-                        >
+                        <button type="button" id="btnDelete" class="btn btn-outline-danger py-2 fw-bold"
+                            onclick="deleteItem()">
                             🗑️ Delete Listing
                         </button>
                     </div>
@@ -178,10 +145,8 @@
                 -->
                 <div class="mt-4 d-flex align-items-center p-3 border rounded-4 bg-light">
                     <div class="flex-shrink-0">
-                        <div
-                            id="avatarCircle"
-                            class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
-                        >
+                        <div id="avatarCircle"
+                            class="c-avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center">
                             <span id="avatarInitial" class="fw-bold">U</span>
                         </div>
                     </div>
@@ -280,8 +245,8 @@
             const badgeEl = document.querySelector('.badge.px-3');
             badgeEl.textContent = item.status;
             const badgeColorMap = {
-                'Lost':     'bg-danger',
-                'Found':    'bg-success',
+                'Lost': 'bg-danger',
+                'Found': 'bg-success',
                 'Resolved': 'bg-secondary',
                 'Rejected': 'bg-dark'
             };
@@ -320,7 +285,7 @@
                         document.getElementById('ownerActions').classList.remove('d-none');
                     }
                 })
-                .catch(() => {}); // giriş yapılmamışsa sessizce geç
+                .catch(() => { }); // giriş yapılmamışsa sessizce geç
         }
 
 
@@ -354,53 +319,34 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                if (response.status === 401) {
-                    alert('Mesaj göndermek için giriş yapmalısınız.');
-                    window.location.href = '04_auth.html';
-                    throw new Error('UNAUTHORIZED');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert('✅ ' + data.message);
-                    // Mesajlar sayfasına yönlendir
-                    window.location.href = '06_messages.html?partner=' + currentItem.user_id;
-                } else {
-                    alert('❌ ' + data.message);
+                .then(response => {
+                    if (response.status === 401) {
+                        alert('Mesaj göndermek için giriş yapmalısınız.');
+                        window.location.href = '04_auth.html';
+                        throw new Error('UNAUTHORIZED');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        // Mesajlar sayfasına yönlendir
+                        window.location.href = '06_messages.html?partner=' + currentItem.user_id;
+                    } else {
+                        alert('❌ ' + data.message);
+                        btn.innerHTML = '<span>✉️</span> Message the Finder';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    if (error.message === 'UNAUTHORIZED') return;
+                    console.error('Send Message Error:', error);
+                    alert('Mesaj gönderilirken bir hata oluştu.');
                     btn.innerHTML = '<span>✉️</span> Message the Finder';
                     btn.disabled = false;
-                }
-            })
-            .catch(error => {
-                if (error.message === 'UNAUTHORIZED') return;
-                console.error('Send Message Error:', error);
-                alert('Mesaj gönderilirken bir hata oluştu.');
-                btn.innerHTML = '<span>✉️</span> Message the Finder';
-                btn.disabled = false;
-            });
+                });
         }
 
-
-        /* ── Spam Bildirimi ──────────────────────────────
-           TODO: Backend endpoint hazır olunca fetch()
-           ile POST isteği buraya eklenecek.
-           Şu an butonu kilitliyor ve konsola yazıyor. */
-        function reportSpam() {
-            const btn = document.getElementById('btnReport');
-
-            if (!confirm('Bu ilanı spam olarak bildirmek istediğinize emin misiniz?')) return;
-
-            btn.textContent = 'Reporting...';
-            btn.disabled = true;
-
-
-            setTimeout(() => {
-                btn.textContent = '✅ Reported';
-                console.log('Spam bildirimi gönderildi.');
-            }, 800);
-        }
 
         function updateUserCard(userName, memberSince) {
             const initial = userName ? userName.charAt(0).toUpperCase() : 'U';
@@ -547,4 +493,5 @@
     </script>
 
 </body>
+
 </html>
