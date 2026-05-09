@@ -323,25 +323,22 @@
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="stat-card bg-white position-relative overflow-hidden">
-                <!-- PHP: echo $totalActive -->
-                <div class="stat-number text-primary" id="statActive">—</div>
-                <div class="stat-label">Total Active Ads</div>
-                <span class="stat-icon">📋</span>
+                <div class="stat-number text-danger" id="statActive">—</div>
+                <div class="stat-label">Lost Listings</div>
+                <span class="stat-icon">🔴</span>
             </div>
         </div>
         <div class="col-md-4">
             <div class="stat-card bg-white position-relative overflow-hidden">
-                <!-- PHP: echo $totalPending -->
-                <div class="stat-number text-warning" id="statPending">—</div>
-                <div class="stat-label">Pending Approval</div>
-                <span class="stat-icon">⏳</span>
+                <div class="stat-number text-success" id="statPending">—</div>
+                <div class="stat-label">Found Listings</div>
+                <span class="stat-icon">🟢</span>
             </div>
         </div>
         <div class="col-md-4">
             <div class="stat-card bg-white position-relative overflow-hidden">
-                <!-- PHP: echo $totalDelivered -->
-                <div class="stat-number text-success" id="statDelivered">—</div>
-                <div class="stat-label">Successfully Delivered</div>
+                <div class="stat-number text-primary" id="statDelivered">—</div>
+                <div class="stat-label">Resolved</div>
                 <span class="stat-icon">✅</span>
             </div>
         </div>
@@ -355,20 +352,19 @@
             <ul class="nav admin-tabs gap-1" id="adminTabs">
 
                 <li class="nav-item">
-                    <button class="nav-link active" data-tab="pending" onclick="switchTab(this, 'pending')">
-                        ⏳ Pending
-
-                        <span class="badge bg-warning text-dark ms-1" id="pendingBadge">0</span>
+                    <button class="nav-link active" data-tab="lost" onclick="switchTab(this, 'lost')">
+                        🔴 Lost
+                        <span class="badge bg-danger text-white ms-1" id="pendingBadge">0</span>
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="active" onclick="switchTab(this, 'active')">
-                        📋 Active
+                    <button class="nav-link" data-tab="found" onclick="switchTab(this, 'found')">
+                        🟢 Found
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" data-tab="delivered" onclick="switchTab(this, 'delivered')">
-                        ✅ Delivered
+                    <button class="nav-link" data-tab="resolved" onclick="switchTab(this, 'resolved')">
+                        ✅ Resolved
                     </button>
                 </li>
                 <li class="nav-item">
@@ -523,21 +519,20 @@
 
     /* --- Initialise on page load --- */
     document.addEventListener('DOMContentLoaded', () => {
-        loadStats();
-        loadTableData('pending');
+        loadTableData('lost');   // varsayılan tab: Lost ilanları
         animateStatCards();
     });
 
-    function loadStats() {
-        const stats = { active: 124, pending: 12, delivered: 85 };
-        updateStats(stats);
-    }
-
+    /**
+     * loadStats — get_admin_listings.php'den istatistikleri çeker
+     * ve stat kartlarını günceller.
+     * loadTableData() yanıtı içinde dönen 'stats' nesnesi kullanılır.
+     */
     function updateStats(stats) {
-        animateNumber('statActive',    stats.active);
-        animateNumber('statPending',   stats.pending);
-        animateNumber('statDelivered', stats.delivered);
-        document.getElementById('pendingBadge').textContent = stats.pending;
+        animateNumber('statActive',    stats.lost    || 0);
+        animateNumber('statPending',   stats.found   || 0);
+        animateNumber('statDelivered', stats.resolved|| 0);
+        document.getElementById('pendingBadge').textContent = stats.found || 0;
     }
 
     /* Animated number counter used by stat cards */
@@ -564,16 +559,44 @@
         });
     }
 
+    /**
+     * loadTableData — get_admin_listings.php'den gerçek veri çeker.
+     * @param {string} tab  'lost' | 'found' | 'resolved' | 'rejected'
+     */
     function loadTableData(tab) {
         currentTab = tab;
         showSkeletonRows(5);
 
-        setTimeout(() => {
-            const data = getMockData(tab);
-            allRows = data;
-            renderTable(data);
-            updateResultInfo(data.length);
-        }, 600); // simulated network delay — remove in production
+        fetch('php/get_admin_listings.php?status=' + encodeURIComponent(tab))
+            .then(r => {
+                if (r.status === 401) {
+                    // Oturum yok — login sayfasına yönlendir
+                    window.location.href = '04_auth.html';
+                    throw new Error('UNAUTHORIZED');
+                }
+                if (r.status === 403) {
+                    document.getElementById('tableBody').innerHTML =
+                        '<tr><td colspan="7" class="text-center text-danger py-4">Bu sayfaya erişim için staff yetkisi gerekmektedir.</td></tr>';
+                    throw new Error('FORBIDDEN');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    allRows = data.listings;
+                    renderTable(data.listings);
+                    updateResultInfo(data.listings.length);
+                    updateStats(data.stats);   // stat kartlarını güncelle
+                } else {
+                    document.getElementById('tableBody').innerHTML =
+                        `<tr><td colspan="7" class="text-center text-danger py-4">${escapeHtml(data.message)}</td></tr>`;
+                }
+            })
+            .catch(err => {
+                if (err.message === 'UNAUTHORIZED' || err.message === 'FORBIDDEN') return;
+                document.getElementById('tableBody').innerHTML =
+                    '<tr><td colspan="7" class="text-center text-danger py-4">Sunucuya bağlanılamadı.</td></tr>';
+            });
     }
 
     function showSkeletonRows(count) {
@@ -603,39 +626,50 @@
 
         emptyState.classList.add('d-none');
 
-        tbody.innerHTML = rows.map(row => `
+        // DB'den gelen alan adları: id, title, owner_name, owner_type, location, created_at, status
+        tbody.innerHTML = rows.map(row => {
+            const dateStr = row.created_at
+                ? new Date(row.created_at).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+                : '—';
+            const statusLower = (row.status || '').toLowerCase();
+            return `
             <tr data-id="${row.id}" class="table-row-animate">
                 <td>
                     <input type="checkbox" class="row-checkbox" value="${row.id}" onchange="onRowSelect(this)">
                 </td>
                 <td class="fw-semibold">${escapeHtml(row.title)}</td>
                 <td>
-                    <div class="fw-medium">${escapeHtml(row.submitter)}</div>
-                    <!-- PHP: role is joined from the users table -->
-                    <div class="text-muted" style="font-size:0.75rem">${escapeHtml(row.role || 'Student')}</div>
+                    <div class="fw-medium">${escapeHtml(row.owner_name)}</div>
+                    <div class="text-muted" style="font-size:0.75rem">${escapeHtml(row.owner_type || 'student')}</div>
                 </td>
                 <td>${escapeHtml(row.location)}</td>
-                <td style="white-space:nowrap">${escapeHtml(row.date)}</td>
-                <td>${getStatusBadge(row.status)}</td>
+                <td style="white-space:nowrap">${escapeHtml(dateStr)}</td>
+                <td>${getStatusBadge(statusLower)}</td>
                 <td>
                     <div class="d-flex gap-1 flex-wrap">
                         <button class="btn-detail" onclick="openDetail(${row.id})">View</button>
-                        ${row.status === 'pending' ? `
-                            <button class="btn-approve" onclick="approveAd(${row.id}, this)">✓</button>
-                            <button class="btn-reject"  onclick="openRejectModal(${row.id})">✗</button>
+                        ${statusLower === 'lost' ? `
+                            <button class="btn-approve" onclick="resolveAdAdmin(${row.id}, this)" title="Mark as Found/Resolved">✓</button>
+                            <button class="btn-reject"  onclick="openRejectModal(${row.id})" title="Reject Ad">✗</button>
                         ` : ''}
-                        ${row.status === 'active' ? `
+                        ${statusLower === 'found' ? `
                             <button
                                 class="btn btn-sm btn-outline-secondary"
-                                onclick="markDelivered(${row.id}, this)"
+                                onclick="resolveAdAdmin(${row.id}, this)"
                                 style="font-size:0.75rem;padding:4px 10px;border-radius:8px">
-                                Mark Delivered
+                                Mark Resolved
                             </button>
                         ` : ''}
+                        <button class="btn btn-sm btn-outline-danger"
+                            onclick="deleteAdAdmin(${row.id}, this)"
+                            style="font-size:0.75rem;padding:4px 10px;border-radius:8px">
+                            🗑
+                        </button>
                     </div>
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
 
         /* Staggered row entrance animation */
         requestAnimationFrame(() => {
@@ -652,60 +686,117 @@
     }
 
     function getStatusBadge(status) {
+        // DB Status_Name değerleri: Lost, Found, Resolved, Rejected
         const map = {
-            pending:   '<span class="badge-pending">⏳ Pending</span>',
-            active:    '<span class="badge-active">✅ Active</span>',
-            delivered: '<span class="badge-active">📦 Delivered</span>',
-            rejected:  '<span class="badge-rejected">❌ Rejected</span>',
+            'lost':     '<span class="badge-pending">🔴 Lost</span>',
+            'found':    '<span class="badge-active">🟢 Found</span>',
+            'resolved': '<span class="badge-active">✅ Resolved</span>',
+            'rejected': '<span class="badge-rejected">❌ Rejected</span>',
         };
-        return map[status] || status;
+        return map[(status || '').toLowerCase()] || `<span class="badge-pending">${escapeHtml(status)}</span>`;
     }
 
 
-    function approveAd(id, btn) {
+    /**
+     * resolveAdAdmin — Staff ilanı 'Resolved' olarak işaretler.
+     * update_item_status.php → action: 'resolve'
+     */
+    function resolveAdAdmin(id, btn) {
         btn.disabled    = true;
         btn.textContent = '...';
 
-        setTimeout(() => {
-            removeRowFromTable(id);
-            updatePendingCount(-1);
-            showToast('success', '✓ Ad approved and published.');
-            closeDetailModal();
-        }, 400);
+        const fd = new FormData();
+        fd.append('item_id', id);
+        fd.append('action', 'resolve');
+
+        fetch('php/update_item_status.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', '✅ ' + data.message);
+                    removeRowFromTable(id);
+                    closeDetailModal();
+                    loadTableData(currentTab); // tabloyu yenile
+                } else {
+                    showToast('danger', data.message);
+                    btn.disabled    = false;
+                    btn.textContent = '✓';
+                }
+            })
+            .catch(() => {
+                showToast('danger', 'Sunucuya bağlanılamadı.');
+                btn.disabled    = false;
+                btn.textContent = '✓';
+            });
     }
 
-  
+    /**
+     * deleteAdAdmin — Staff ilanı siler.
+     * delete_item.php → item_id
+     */
+    function deleteAdAdmin(id, btn) {
+        if (!confirm('Bu ilanı kalıcı olarak silmek istediğinize emin misiniz?')) return;
+        btn.disabled    = true;
+        btn.textContent = '...';
+
+        const fd = new FormData();
+        fd.append('item_id', id);
+
+        fetch('php/delete_item.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', 'İlan silindi.');
+                    removeRowFromTable(id);
+                    closeDetailModal();
+                    loadTableData(currentTab);
+                } else {
+                    showToast('danger', data.message);
+                    btn.disabled    = false;
+                    btn.textContent = '🗑';
+                }
+            })
+            .catch(() => {
+                showToast('danger', 'Sunucuya bağlanılamadı.');
+                btn.disabled    = false;
+                btn.textContent = '🗑';
+            });
+    }
+
     function openRejectModal(id) {
         pendingRejectId = id;
         document.getElementById('rejectReason').value = '';
         new bootstrap.Modal(document.getElementById('rejectModal')).show();
     }
 
+    /**
+     * confirmReject — Staff ilanı 'Rejected' olarak işaretler.
+     * update_item_status.php → action: 'reject'
+     */
     function confirmReject() {
-        const reason = document.getElementById('rejectReason').value.trim();
         bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
 
-        setTimeout(() => {
-            removeRowFromTable(pendingRejectId);
-            updatePendingCount(-1);
-            showToast('danger', '✗ Ad has been rejected.');
-            closeDetailModal();
-            pendingRejectId = null;
-        }, 300);
-    }
+        const fd = new FormData();
+        fd.append('item_id', pendingRejectId);
+        fd.append('action', 'reject');
 
-    function markDelivered(id, btn) {
-        btn.disabled    = true;
-        btn.textContent = '...';
-
-        setTimeout(() => {
-            const row = document.querySelector(`tr[data-id="${id}"]`);
-            if (row) {
-                row.querySelector('td:nth-child(6)').innerHTML = getStatusBadge('delivered');
-                row.querySelector('.d-flex').innerHTML = '';
-            }
-            showToast('success', '📦 Ad marked as delivered.');
-        }, 400);
+        fetch('php/update_item_status.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('danger', '❌ ' + data.message);
+                    removeRowFromTable(pendingRejectId);
+                    closeDetailModal();
+                    loadTableData(currentTab);
+                } else {
+                    showToast('danger', data.message);
+                }
+                pendingRejectId = null;
+            })
+            .catch(() => {
+                showToast('danger', 'Sunucuya bağlanılamadı.');
+                pendingRejectId = null;
+            });
     }
 
   

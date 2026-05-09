@@ -112,12 +112,6 @@
 
 
                 <!-- ─── Aksiyon Butonları ───────────────────── -->
-                <!--
-                    Düzeltme 5: Her iki butona type="button" eklendi.
-                    İşlevsiz butonlar JS fonksiyonlarına bağlandı.
-                    "Message the Finder" → openMessages() fonksiyonu
-                    "Report as Spam"     → reportSpam() fonksiyonu
-                -->
                 <div class="d-grid gap-3">
                     <button
                         type="button"
@@ -136,7 +130,41 @@
                         <span>🚩</span> Report as Spam
                     </button>
                 </div>
-                <!-- /Aksiyon Butonları -->
+
+                <!-- ─── İlan Sahibi İşlemleri (yalnızca sahibe görünür) ── -->
+                <div id="ownerActions" class="d-none mt-3">
+                    <hr class="text-muted opacity-25">
+                    <p class="text-muted small fw-bold text-uppercase mb-2">My Listing Actions</p>
+                    <div class="d-grid gap-2">
+                        <button
+                            type="button"
+                            id="btnResolve"
+                            class="btn btn-success py-2 fw-bold"
+                            onclick="resolveItem()"
+                        >
+                            ✅ Mark as Resolved
+                        </button>
+                        <button
+                            type="button"
+                            id="btnReopen"
+                            class="btn btn-outline-secondary py-2 fw-bold d-none"
+                            onclick="reopenItem()"
+                        >
+                            🔄 Reopen Listing
+                        </button>
+                        <button
+                            type="button"
+                            id="btnDelete"
+                            class="btn btn-outline-danger py-2 fw-bold"
+                            onclick="deleteItem()"
+                        >
+                            🗑️ Delete Listing
+                        </button>
+                    </div>
+                    <!-- İşlem sonuç mesajı -->
+                    <div id="ownerAlert" class="alert d-none mt-2" role="alert"></div>
+                </div>
+                <!-- /İlan Sahibi İşlemleri -->
 
 
                 <!-- ─── İlan Sahibi Bilgisi ────────────────── -->
@@ -251,7 +279,13 @@
             // Durum badge
             const badgeEl = document.querySelector('.badge.px-3');
             badgeEl.textContent = item.status;
-            badgeEl.className = 'badge px-3 py-2 ' + (item.status === 'Lost' ? 'bg-danger' : 'bg-success');
+            const badgeColorMap = {
+                'Lost':     'bg-danger',
+                'Found':    'bg-success',
+                'Resolved': 'bg-secondary',
+                'Rejected': 'bg-dark'
+            };
+            badgeEl.className = 'badge px-3 py-2 ' + (badgeColorMap[item.status] || 'bg-secondary');
 
             // Kategori
             document.querySelector('.text-muted.fw-bold.small.text-uppercase').textContent = item.category;
@@ -275,6 +309,18 @@
 
             // Sayfa başlığı
             document.title = item.title + ' | Campus Lost & Found';
+
+            // ── Sahip butonlarını göster/gizle ──
+            // Oturumdaki kullanıcı ID'sini check_session.php'den alıp
+            // ilan sahibiyle karşılaştır.
+            fetch('php/check_session.php')
+                .then(r => r.json())
+                .then(session => {
+                    if (session.status === 'success' && parseInt(session.user.id) === parseInt(item.user_id)) {
+                        document.getElementById('ownerActions').classList.remove('d-none');
+                    }
+                })
+                .catch(() => {}); // giriş yapılmamışsa sessizce geç
         }
 
 
@@ -361,6 +407,141 @@
             document.getElementById('avatarInitial').textContent = initial;
             document.getElementById('userName').textContent = userName || 'User';
             document.getElementById('memberSince').textContent = memberSince || '';
+        }
+
+
+        /* ============================================================
+         *  OWNER ACTIONS — İlan Sahibine Özel İşlemler
+         * ============================================================ */
+
+        /**
+         * Sahip bildirim mesajı gösterir.
+         */
+        function showOwnerAlert(message, isSuccess) {
+            const el = document.getElementById('ownerAlert');
+            el.className = 'alert mt-2 ' + (isSuccess ? 'alert-success' : 'alert-danger');
+            el.textContent = message;
+            el.classList.remove('d-none');
+        }
+
+        /**
+         * İlanı 'Resolved' olarak işaretler (Status_ID = 3).
+         * update_item_status.php → action: 'resolve'
+         */
+        function resolveItem() {
+            if (!currentItem) return;
+            if (!confirm('Bu ilanı "Çözümlendi" olarak işaretlemek istiyor musunuz?')) return;
+
+            const btn = document.getElementById('btnResolve');
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('item_id', currentItem.id);
+            fd.append('action', 'resolve');
+
+            fetch('php/update_item_status.php', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showOwnerAlert(data.message, true);
+                        // Badge'i güncelle
+                        const badge = document.querySelector('.badge.px-3');
+                        badge.textContent = 'Resolved';
+                        badge.className = 'badge px-3 py-2 bg-secondary';
+                        // Butonları değiştir
+                        btn.classList.add('d-none');
+                        document.getElementById('btnReopen').classList.remove('d-none');
+                    } else {
+                        showOwnerAlert(data.message, false);
+                        btn.textContent = '✅ Mark as Resolved';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    showOwnerAlert('Sunucuya bağlanılamadı.', false);
+                    btn.textContent = '✅ Mark as Resolved';
+                    btn.disabled = false;
+                });
+        }
+
+        /**
+         * İlanı yeniden 'Lost' olarak açar (Status_ID = 1).
+         * update_item_status.php → action: 'reopen'
+         */
+        function reopenItem() {
+            if (!currentItem) return;
+
+            const btn = document.getElementById('btnReopen');
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('item_id', currentItem.id);
+            fd.append('action', 'reopen');
+
+            fetch('php/update_item_status.php', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showOwnerAlert(data.message, true);
+                        const badge = document.querySelector('.badge.px-3');
+                        badge.textContent = 'Lost';
+                        badge.className = 'badge px-3 py-2 bg-danger';
+                        btn.classList.add('d-none');
+                        document.getElementById('btnResolve').classList.remove('d-none');
+                        document.getElementById('btnResolve').disabled = false;
+                        document.getElementById('btnResolve').textContent = '✅ Mark as Resolved';
+                    } else {
+                        showOwnerAlert(data.message, false);
+                        btn.textContent = '🔄 Reopen Listing';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    showOwnerAlert('Sunucuya bağlanılamadı.', false);
+                    btn.textContent = '🔄 Reopen Listing';
+                    btn.disabled = false;
+                });
+        }
+
+        /**
+         * İlanı siler (DELETE FROM items).
+         * delete_item.php → item_id
+         */
+        function deleteItem() {
+            if (!currentItem) return;
+            if (!confirm('Bu ilanı kalıcı olarak silmek istediğinize emin misiniz?\nBu işlem geri alınamaz.')) return;
+
+            const btn = document.getElementById('btnDelete');
+            btn.textContent = 'Deleting...';
+            btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('item_id', currentItem.id);
+
+            fetch('php/delete_item.php', { method: 'POST', body: fd })
+                .then(r => {
+                    if (r.status === 403) {
+                        return r.json().then(d => { throw new Error(d.message); });
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showOwnerAlert('İlan silindi. Ana sayfaya yönlendiriliyorsunuz...', true);
+                        setTimeout(() => { window.location.href = '01_index.html'; }, 1500);
+                    } else {
+                        showOwnerAlert(data.message, false);
+                        btn.textContent = '🗑️ Delete Listing';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    showOwnerAlert(err.message || 'Sunucuya bağlanılamadı.', false);
+                    btn.textContent = '🗑️ Delete Listing';
+                    btn.disabled = false;
+                });
         }
 
     </script>
