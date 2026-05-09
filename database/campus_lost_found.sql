@@ -139,8 +139,25 @@ CREATE TABLE IF NOT EXISTS item_photos (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ──────────────────────────────────────────────
+--  9) messages tablosu (Kullanıcılar Arası Mesajlaşma)
+-- ──────────────────────────────────────────────
+--  Kullanıcıların ilan sahipleriyle/bulanlarla iletişim kurması
+CREATE TABLE IF NOT EXISTS messages (
+    Message_ID  INT AUTO_INCREMENT PRIMARY KEY,
+    Sender_ID   INT NOT NULL,
+    Receiver_ID INT NOT NULL,
+    Item_ID     INT NULL,
+    Content     VARCHAR(500) NOT NULL,
+    Is_Read     TINYINT(1) DEFAULT 0,
+    Created_At  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Sender_ID)   REFERENCES users(User_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Receiver_ID) REFERENCES users(User_ID) ON DELETE CASCADE,
+    FOREIGN KEY (Item_ID)     REFERENCES items(Item_ID) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ============================================================
 --  Kurulum tamamlandı!
 --  Tablolar: users, students, staff, statuses, categories,
---            locations, items, item_photos
+--            locations, items, item_photos, messages
 -- ============================================================
